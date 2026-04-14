@@ -25,15 +25,28 @@
         </aside>
 
         <main class="flex-1 p-8 overflow-y-auto">
-
+            
+            <!-- OVERVIEW SECTION -->
             <section id="overview" class="tab-content">
                 <h2 class="text-3xl font-bold mb-6">Platform Overview</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="card text-center py-10">
-                        <span class="text-zinc-400 text-sm uppercase font-semibold tracking-widest">Total Users</span>
-                        <p id="total-users" class="text-5xl font-black mt-4 text-red-500">0</p>
-                    </div>
-                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+                <div class="card border-t-4 border-yellow-500 text-center">
+                <span class="text-zinc-400 text-xs uppercase font-bold tracking-widest">Pending Images</span>
+                <p id="counter-pending-images" class="text-5xl font-black mt-4 text-yellow-500">0</p>
+            </div>
+
+            <div class="card border-t-4 border-blue-500 text-center">
+                <span class="text-zinc-400 text-xs uppercase font-bold tracking-widest">Queue Transactions</span>
+                <p id="counter-queue-transactions" class="text-5xl font-black mt-4 text-blue-500">0</p>
+            </div>
+    
+            <div class="card border-t-4 border-red-500 text-center">
+                <span class="text-zinc-400 text-xs uppercase font-bold tracking-widest">Failed Transactions</span>
+                <p id="counter-failed-transactions" class="text-5xl font-black mt-4 text-red-500">0</p>
+            </div>
+
+            </div>
             </section>
 
             <section id="clients" class="tab-content hidden">
