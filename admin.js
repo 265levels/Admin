@@ -1,4 +1,3 @@
-// 1. CONFIGURATION
 const firebaseConfig = {
   apiKey: "AIzaSyCPUBkJzJhLUVD0qXMg2_tyvsZ9ZxtfWuc",
   authDomain: "levels-ecommerce.firebaseapp.com",
@@ -9,17 +8,14 @@ const firebaseConfig = {
   measurementId: "G-RQJSBPTWC9"
 };
 
-// Initialize
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// ================= TAB SWITCHING =================
 function switchTab(tabId) {
     document.querySelectorAll(".tab-content").forEach(t => t.classList.add("hidden"));
     document.getElementById(tabId).classList.remove("hidden");
 }
 
-// ================= LOAD DATA =================
 async function loadClients() {
     try {
         const snap = await db.collection("users").get();
@@ -29,51 +25,55 @@ async function loadClients() {
             const u = doc.data();
             container.innerHTML += `
                 <div class="card flex justify-between items-center">
-                    <div><p class="font-bold">${u.name || 'No Name'}</p><p class="text-sm text-zinc-400">${u.email}</p></div>
-                    <button onclick="blockUser('${doc.id}')" class="btn-outline text-red-500">Block</button>
+                    <div>
+                        <p class="font-bold">${u.name || 'Anonymous'}</p>
+                        <p class="text-sm text-zinc-400">${u.email}</p>
+                    </div>
+                    <button onclick="blockUser('${doc.id}')" class="btn-outline text-red-500 border-red-900">Block</button>
                 </div>`;
         });
         document.getElementById('total-users').innerText = snap.size;
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Error loading clients:", e); }
 }
 
 async function loadTransactions() {
     try {
-        const snap = await db.collection("transactions").orderBy("createdAt", "desc").limit(10).get();
+        const snap = await db.collection("transactions").orderBy("createdAt", "desc").limit(15).get();
         const container = document.getElementById("transactions-list");
         container.innerHTML = "";
         snap.forEach(doc => {
             const t = doc.data();
             container.innerHTML += `
-                <div class="card flex justify-between">
+                <div class="card flex justify-between items-center border-l-4 ${t.status === 'paid' ? 'border-green-600' : 'border-zinc-700'}">
                     <span>${t.buyerName || 'Order'}</span>
-                    <span class="text-green-500 font-bold">MWK ${t.amount}</span>
+                    <span class="text-green-500 font-bold font-mono">MWK ${t.amount}</span>
                 </div>`;
         });
-    } catch (e) { console.log("Transactions table empty."); }
+    } catch (e) { console.log("No transactions found."); }
 }
 
 async function loadImages() {
     try {
         const snap = await db.collection("products").where("status", "==", "pending").get();
         const container = document.getElementById("image-queue");
-        container.innerHTML = snap.empty ? "<p>No images pending.</p>" : "";
+        container.innerHTML = snap.empty ? "<p class='text-zinc-500'>Queue clear!</p>" : "";
         snap.forEach(doc => {
             const p = doc.data();
             container.innerHTML += `
                 <div class="card">
-                    <p class="mb-2 font-bold">${p.title}</p>
-                    <div class="flex gap-2 mb-4">${p.images?.map(img => `<img src="${img}" class="w-20 h-20 object-cover rounded"/>`).join("")}</div>
-                    <div class="flex gap-2">
-                        <button onclick="updateStatus('products','${doc.id}','approved')" class="btn-outline text-green-500">Approve</button>
-                        <button onclick="updateStatus('products','${doc.id}','rejected')" class="btn-outline text-red-500">Reject</button>
+                    <p class="mb-3 font-bold text-lg">${p.title}</p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        ${p.images?.map(img => `<img src="${img}" class="w-24 h-24 object-cover rounded-lg border border-zinc-700"/>`).join("")}
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="updateStatus('products','${doc.id}','approved')" class="flex-1 btn-outline text-green-500 border-green-900 hover:bg-green-950">Approve</button>
+                        <button onclick="updateStatus('products','${doc.id}','rejected')" class="flex-1 btn-outline text-red-500 border-red-900 hover:bg-red-950">Reject</button>
                     </div>
                 </div>`;
         });
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Error loading images:", e); }
 }
 
-// ================= ACTIONS =================
 async function updateStatus(collection, id, status) {
     await db.collection(collection).doc(id).update({ status });
     alert("Updated to " + status);
@@ -83,19 +83,22 @@ async function updateStatus(collection, id, status) {
 async function blockUser(id) {
     if(!confirm("Block this user?")) return;
     await db.collection("users").doc(id).update({ status: 'blocked' });
+    alert("User blocked.");
     loadClients();
 }
 
 async function sendMessage() {
     const user = document.getElementById("msg-user").value;
     const text = document.getElementById("msg-text").value;
+    if(!user || !text) return alert("Fill all fields");
     await db.collection("messages").add({
         to: user, message: text, createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    alert("Sent!");
+    alert("Message sent!");
+    document.getElementById("msg-text").value = "";
 }
 
-// Start
+// Startup
 loadClients();
 loadTransactions();
 loadImages();
