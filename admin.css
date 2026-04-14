@@ -1,4 +1,32 @@
-/* Sidebar Buttons */
+/* --- BASE STYLES --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+}
+
+/* --- NAVIGATION & SIDEBAR --- */
+#sidebar {
+    /* Height of the mobile header is 65px */
+    top: 65px; 
+    left: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* On Desktop: Reset sidebar position */
+@media (min-width: 1024px) {
+    #sidebar {
+        top: 0;
+        display: flex !important; /* Force flex on desktop */
+    }
+}
+
 .tab-btn {
     width: 100%;
     padding: 12px 16px;
@@ -6,7 +34,10 @@
     text-align: left;
     color: #a1a1aa;
     font-weight: 500;
-    transition: 0.2s;
+    transition: 0.2s ease;
+    background: transparent;
+    border: none;
+    cursor: pointer;
 }
 
 .tab-btn:hover {
@@ -14,14 +45,21 @@
     color: white;
 }
 
-/* Content Cards */
+/* --- CARDS & LAYOUT --- */
 .card {
     background: #18181b;
     padding: 24px;
     border-radius: 16px;
+    border: 1px solid #27272a;
+    word-wrap: break-word; /* Important for long IDs on mobile */
+    transition: transform 0.2s ease;
 }
 
-/* Form Inputs */
+.card:hover {
+    border-color: #3f3f46;
+}
+
+/* --- FORM ELEMENTS --- */
 .input {
     width: 100%;
     padding: 12px;
@@ -31,25 +69,95 @@
     border: 1px solid #27272a;
     color: white;
     outline: none;
+    font-size: 16px; /* Prevents iOS auto-zoom on focus */
 }
 
 .input:focus {
     border-color: #e11d48;
+    box-shadow: 0 0 0 2px rgba(225, 29, 72, 0.1);
 }
 
-/* Buttons */
+select.input {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a1a1aa'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
+}
+
+/* --- BUTTONS --- */
 .btn {
-    padding: 12px 18px;
+    padding: 12px 20px;
     background: #e11d48;
     color: white;
     border-radius: 10px;
     font-weight: bold;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.btn:hover {
+    background: #be123c;
 }
 
 .btn-outline {
     padding: 8px 16px;
+    background: transparent;
     border: 1px solid #3f3f46;
+    color: #d4d4d8;
     border-radius: 10px;
     font-size: 14px;
-    transition: 0.2s;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-outline:hover {
+    background: #27272a;
+    border-color: #52525b;
+    color: white;
+}
+
+/* --- IMAGE QUEUE RESPONSIVENESS --- */
+#image-queue img {
+    width: 100%;
+    aspect-ratio: 1/1;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #27272a;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.tab-content {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* --- CUSTOM SCROLLBAR (For Webkit browsers) --- */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #09090b;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #27272a;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #3f3f46;
 }
