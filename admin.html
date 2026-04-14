@@ -15,7 +15,7 @@
         <aside class="w-72 bg-zinc-900 p-6 flex flex-col gap-2 border-r border-zinc-800">
             <h1 class="text-2xl font-black text-red-500 mb-6 tracking-tighter">LEVELS ADMIN</h1>
             <nav class="flex flex-col gap-2">
-                <button onclick="switchTab('overview')" class="tab-btn active">📊 Overview</button>
+                <button onclick="switchTab('overview')" class="tab-btn">📊 Overview</button>
                 <button onclick="switchTab('clients')" class="tab-btn">👤 Clients</button>
                 <button onclick="switchTab('transactions')" class="tab-btn">💳 Transactions</button>
                 <button onclick="switchTab('images')" class="tab-btn">🖼 Image Approval</button>
@@ -44,12 +44,17 @@
 
             <section id="clients" class="tab-content hidden">
                 <h2 class="text-2xl font-bold mb-6">Client Management</h2>
-                <div id="clients-list" class="grid grid-cols-1 gap-4"></div>
+                <div id="clients-list" class="space-y-4"></div>
             </section>
 
             <section id="transactions" class="tab-content hidden">
                 <h2 class="text-2xl font-bold mb-6">Transaction Monitor</h2>
                 <div id="transactions-list" class="space-y-4"></div>
+            </section>
+
+            <section id="images" class="tab-content hidden">
+                <h2 class="text-2xl font-bold mb-6">Product Image Approval</h2>
+                <div id="image-queue" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             </section>
 
             <section id="messages" class="tab-content hidden">
