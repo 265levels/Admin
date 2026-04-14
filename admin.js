@@ -1,9 +1,23 @@
-// 1. AUTH CONFIG
-const AUTHORIZED_EMAILS = ["dalitsokaputa7@gmail.com"]; // ADD YOUR EMAIL HERE 
+// 1. FIREBASE CONFIGURATION (Must be at the very top)
+const firebaseConfig = {
+  apiKey: "AIzaSyCPUBkJzJhLUVD0qXMg2_tyvsZ9ZxtfWuc",
+  authDomain: "levels-ecommerce.firebaseapp.com",
+  projectId: "levels-ecommerce",
+  storageBucket: "levels-ecommerce.firebasestorage.app",
+  messagingSenderId: "637669858543",
+  appId: "1:637669858543:web:9f61dafba8842416f58f1a",
+  measurementId: "G-RQJSBPTWC9"
+};
 
-// 2. AUTH FUNCTIONS
+// Initialize Firebase immediately
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// 2. AUTH CONFIG & GATEKEEPER
+const AUTHORIZED_EMAILS = ["dalitsokaputa7@gmail.com"]; 
+
 async function login() {
-    console.log("Login button clicked"); // Check your console to see if this prints
+    console.log("Attempting login...");
     const provider = new firebase.auth.GoogleAuthProvider();
     try {
         await firebase.auth().signInWithPopup(provider);
@@ -19,63 +33,38 @@ function logout() {
     });
 }
 
-// 3. AUTH LISTENER (This controls the Gatekeeper)
+// This listener runs automatically to check if you are logged in
 firebase.auth().onAuthStateChanged((user) => {
     const overlay = document.getElementById('login-overlay');
     const errorMsg = document.getElementById('login-error');
 
     if (user) {
         if (AUTHORIZED_EMAILS.includes(user.email)) {
-            // SUCCESS: User is logged in and authorized
+            // SUCCESS: User is authorized
             overlay.classList.add('hidden');
-            console.log("Welcome, Admin:", user.email);
+            console.log("Authorized as:", user.email);
             
-            // Start loading data ONLY after login
-            loadClients();
-            loadTransactions();
-            loadImages();
-            updateOverviewStats();
+            // Trigger data load only after successful auth
+            startDashboard(); 
         } else {
-            // REJECTED: Logged in but not an admin
+            // REJECTED: Not an admin email
             firebase.auth().signOut();
             errorMsg.classList.remove('hidden');
             errorMsg.innerText = "Access Denied: " + user.email + " is not authorized.";
         }
     } else {
-        // NOT LOGGED IN
+        // SHOW LOGIN SCREEN
         overlay.classList.remove('hidden');
     }
 });
 
-// ================= MOBILE NAVIGATION =================
-function toggleMenu() {
-    const sidebar = document.getElementById('sidebar');
-    sidebar.classList.toggle('hidden');
-    sidebar.classList.toggle('flex');
+// 3. DASHBOARD LOGIC
+function startDashboard() {
+    loadClients();
+    loadTransactions();
+    loadImages();
+    updateOverviewStats();
 }
-
-// Special switch tab function that closes the menu on mobile after clicking
-function switchTabMobile(tabId) {
-    switchTab(tabId); // Call original function
-    if (window.innerWidth < 1024) { // 1024px is the Tailwind 'lg' breakpoint
-        toggleMenu();
-    }
-}
-
-// 1. FIREBASE CONFIGURATION (Linked to levels-ecommerce)
-const firebaseConfig = {
-  apiKey: "AIzaSyCPUBkJzJhLUVD0qXMg2_tyvsZ9ZxtfWuc",
-  authDomain: "levels-ecommerce.firebaseapp.com",
-  projectId: "levels-ecommerce",
-  storageBucket: "levels-ecommerce.firebasestorage.app",
-  messagingSenderId: "637669858543",
-  appId: "1:637669858543:web:9f61dafba8842416f58f1a",
-  measurementId: "G-RQJSBPTWC9"
-};
-
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
 
 // ================= NAVIGATION =================
 function switchTab(tabId) {
@@ -83,27 +72,36 @@ function switchTab(tabId) {
     document.getElementById(tabId).classList.remove("hidden");
 }
 
+function toggleMenu() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('hidden');
+    sidebar.classList.toggle('flex');
+}
+
+function switchTabMobile(tabId) {
+    switchTab(tabId);
+    if (window.innerWidth < 1024) {
+        toggleMenu();
+    }
+}
+
 // ================= OVERVIEW MONITORS =================
 function updateOverviewStats() {
-    // Live Pending Images
     db.collection("products").where("status", "==", "pending")
         .onSnapshot(snap => {
             document.getElementById('counter-pending-images').innerText = snap.size;
         });
 
-    // Live Queue Transactions
     db.collection("transactions").where("status", "==", "pending")
         .onSnapshot(snap => {
             document.getElementById('counter-queue-transactions').innerText = snap.size;
         });
 
-    // Live Failed Transactions
     db.collection("transactions").where("status", "==", "failed")
         .onSnapshot(snap => {
             document.getElementById('counter-failed-transactions').innerText = snap.size;
         });
 }
-
 
 // ================= CLIENT SEARCH & RENDERING =================
 async function searchClients() {
@@ -117,17 +115,14 @@ async function searchClients() {
     try {
         let query;
         if (type === "transactionId") {
-            // Step 1: Find transaction
             const transSnap = await db.collection("transactions").where("transactionId", "==", value).get();
             if (transSnap.empty) {
-                container.innerHTML = "<p class='text-red-400'>No transaction found with that ID.</p>";
+                container.innerHTML = "<p class='text-red-400'>No transaction found.</p>";
                 return;
             }
-            // Step 2: Get user via email linked to transaction
             const buyerEmail = transSnap.docs[0].data().buyerEmail;
             query = db.collection("users").where("email", "==", buyerEmail);
         } else {
-            // Search by email or phone directly
             query = db.collection("users").where(type, "==", value);
         }
 
@@ -239,9 +234,3 @@ async function sendMessage() {
     alert("Message sent!");
     document.getElementById("msg-text").value = "";
 }
-
-// STARTUP
-loadClients();
-loadTransactions();
-loadImages();
-updateOverviewStats(); 
