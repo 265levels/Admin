@@ -14,7 +14,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 // 2. AUTH CONFIG & GATEKEEPER
-const AUTHORIZED_EMAILS = ["dalitsokaputa7@gmail.com"]; 
+const AUTHORIZED_EMAILS = ["dalitsokaputa7@gmail.com", "codesoftmalawi@gmail.com"]; 
 
 async function login() {
     console.log("Attempting login...");
@@ -37,23 +37,26 @@ function logout() {
 firebase.auth().onAuthStateChanged((user) => {
     const overlay = document.getElementById('login-overlay');
     const errorMsg = document.getElementById('login-error');
+    const userDisplay = document.getElementById('current-user');
 
     if (user) {
         if (AUTHORIZED_EMAILS.includes(user.email)) {
-            // SUCCESS: User is authorized
             overlay.classList.add('hidden');
             console.log("Authorized as:", user.email);
-            
-            // Trigger data load only after successful auth
+
+            // Show user name/email in header
+            if (userDisplay) {
+                userDisplay.innerText = user.displayName || user.email;
+            }
+
+            logActivity("Login"); 
             startDashboard(); 
         } else {
-            // REJECTED: Not an admin email
             firebase.auth().signOut();
             errorMsg.classList.remove('hidden');
             errorMsg.innerText = "Access Denied: " + user.email + " is not authorized.";
         }
     } else {
-        // SHOW LOGIN SCREEN
         overlay.classList.remove('hidden');
     }
 });
