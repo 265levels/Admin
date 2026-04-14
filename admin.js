@@ -1,115 +1,94 @@
-// ================= TAB SWITCHING =================
-function switchTab(tab) {
-    document.querySelectorAll(".tab").forEach(t => t.classList.add("hidden"));
-    document.getElementById(tab).classList.remove("hidden");
-}
+// 1. CONFIGURATION - REPLACE WITH YOUR ACTUAL FIREBASE KEYS
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_ID",
+    appId: "YOUR_APP_ID"
+};
 
-// ================= FIREBASE INIT =================
-const app = firebase.initializeApp(firebaseConfig);
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// ================= LOAD CLIENTS =================
+// ================= TAB SWITCHING =================
+function switchTab(tabId) {
+    // Hide all tabs
+    document.querySelectorAll(".tab-content").forEach(t => t.classList.add("hidden"));
+    // Remove active style from all buttons
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("bg-zinc-800", "text-red-500"));
+    
+    // Show selected tab
+    document.getElementById(tabId).classList.remove("hidden");
+}
+
+// ================= DATA LOADING =================
 async function loadClients() {
-    const snap = await db.collection("users").get();
-    const container = document.getElementById("clients-list");
-    container.innerHTML = "";
+    try {
+        const snap = await db.collection("users").limit(20).get();
+        const container = document.getElementById("clients-list");
+        container.innerHTML = snap.empty ? "<p>No users found.</p>" : "";
 
-    snap.forEach(doc => {
-        const u = doc.data();
-
-        container.innerHTML += `
-        <div class="card">
-            <p>👤 ${u.name || "No Name"}</p>
-            <p>📧 ${u.email}</p>
-            <p>📍 ${u.location || "Unknown"}</p>
-
-            <button onclick="blockUser('${doc.id}')" class="btn">Block</button>
-            <button onclick="viewClient('${doc.id}')" class="btn">View</button>
-        </div>
-        `;
-    });
+        snap.forEach(doc => {
+            const u = doc.data();
+            container.innerHTML += `
+                <div class="card flex justify-between items-center">
+                    <div>
+                        <p class="font-bold text-lg">${u.name || 'Anonymous'}</p>
+                        <p class="text-zinc-400 text-sm">${u.email}</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="blockUser('${doc.id}')" class="btn-outline">Block</button>
+                        <button class="btn-outline">Profile</button>
+                    </div>
+                </div>`;
+        });
+        document.getElementById('total-users').innerText = snap.size;
+    } catch (err) {
+        console.error("Error loading clients:", err);
+    }
 }
 
-// ================= LOAD TRANSACTIONS =================
 async function loadTransactions() {
-    const snap = await db.collection("transactions").orderBy("createdAt","desc").get();
-    const container = document.getElementById("transactions-list");
-    container.innerHTML = "";
+    try {
+        const snap = await db.collection("transactions").orderBy("createdAt", "desc").limit(10).get();
+        const container = document.getElementById("transactions-list");
+        container.innerHTML = "";
 
-    snap.forEach(doc => {
-        const t = doc.data();
-
-        container.innerHTML += `
-        <div class="card">
-            <p>💳 ${t.transactionId}</p>
-            <p>👤 Buyer: ${t.buyerName}</p>
-            <p>🏪 Seller: ${t.sellerName}</p>
-            <p>💰 MWK ${t.amount}</p>
-            <p>📡 Status: ${t.status}</p>
-
-            <button onclick="updateStatus('${doc.id}','paid')" class="btn">Mark Paid</button>
-            <button onclick="updateStatus('${doc.id}','failed')" class="btn">Fail</button>
-        </div>
-        `;
-    });
+        snap.forEach(doc => {
+            const t = doc.data();
+            container.innerHTML += `
+                <div class="card border-l-4 ${t.status === 'paid' ? 'border-green-500' : 'border-yellow-500'}">
+                    <div class="flex justify-between">
+                        <span>ID: ${doc.id.substring(0,8)}</span>
+                        <span class="font-bold text-green-400">MWK ${t.amount || 0}</span>
+                    </div>
+                    <p class="text-sm text-zinc-400 mt-2">Status: ${t.status}</p>
+                </div>`;
+        });
+    } catch (err) {
+        console.log("Transactions collection might be empty or missing index.");
+    }
 }
 
-// ================= IMAGE APPROVAL =================
-async function loadImages() {
-    const snap = await db.collection("products").where("status","==","pending").get();
-    const container = document.getElementById("image-queue");
-    container.innerHTML = "";
-
-    snap.forEach(doc => {
-        const p = doc.data();
-
-        container.innerHTML += `
-        <div class="card">
-            <p>📦 ${p.title}</p>
-
-            <div class="flex gap-2">
-                ${p.images.map(img => `<img src="${img}" width="80"/>`).join("")}
-            </div>
-
-            <button onclick="approve('${doc.id}')" class="btn">Approve</button>
-            <button onclick="reject('${doc.id}')" class="btn">Reject</button>
-        </div>
-        `;
-    });
-}
-
-// ================= BLOCK USER =================
-async function blockUser(id) {
-    await db.collection("users").doc(id).update({
-        status: "blocked"
-    });
-    alert("User blocked");
-    loadClients();
-}
-
-// ================= TRANSACTION UPDATE =================
-async function updateStatus(id, status) {
-    await db.collection("transactions").doc(id).update({
-        status
-    });
-    loadTransactions();
-}
-
-// ================= MESSAGE SYSTEM =================
+// ================= ACTIONS =================
 async function sendMessage() {
     const user = document.getElementById("msg-user").value;
     const text = document.getElementById("msg-text").value;
 
+    if(!user || !text) return alert("Please fill all fields");
+
     await db.collection("messages").add({
         to: user,
         message: text,
-        createdAt: new Date()
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    alert("Message sent");
+    alert("Message sent successfully!");
+    document.getElementById("msg-text").value = "";
 }
 
-// ================= INITIAL LOAD =================
+// Initial Run
 loadClients();
 loadTransactions();
-loadImages();
