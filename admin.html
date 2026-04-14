@@ -1,96 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Admin Control Center</title>
-<link rel="stylesheet" href="admin.css"/>
-<script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Levels Admin Control Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="admin.css"/>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 </head>
 
-<body class="bg-zinc-950 text-white">
+<body class="bg-zinc-950 text-white font-sans">
+    <div class="flex h-screen overflow-hidden">
+        <aside class="w-72 bg-zinc-900 p-6 flex flex-col gap-2 border-r border-zinc-800">
+            <h1 class="text-2xl font-black text-red-500 mb-6 tracking-tighter">LEVELS ADMIN</h1>
+            <nav class="flex flex-col gap-2">
+                <button onclick="switchTab('overview')" class="tab-btn active">📊 Overview</button>
+                <button onclick="switchTab('clients')" class="tab-btn">👤 Clients</button>
+                <button onclick="switchTab('transactions')" class="tab-btn">💳 Transactions</button>
+                <button onclick="switchTab('images')" class="tab-btn">🖼 Image Approval</button>
+                <button onclick="switchTab('messages')" class="tab-btn">💬 Messages</button>
+            </nav>
+        </aside>
 
-<div class="flex h-screen overflow-hidden">
+        <main class="flex-1 p-8 overflow-y-auto">
+            <section id="overview" class="tab-content">
+                <h2 class="text-3xl font-bold mb-6">Platform Overview</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="card">
+                        <span class="text-zinc-400 text-sm uppercase">Total Users</span>
+                        <p id="total-users" class="text-3xl mt-2">0</p>
+                    </div>
+                    <div class="card">
+                        <span class="text-zinc-400 text-sm uppercase">Active Reports</span>
+                        <p id="reports" class="text-3xl mt-2 text-red-400">0</p>
+                    </div>
+                    <div class="card">
+                        <span class="text-zinc-400 text-sm uppercase">Total Revenue</span>
+                        <p id="revenue" class="text-3xl mt-2 text-green-400">MWK 0</p>
+                    </div>
+                </div>
+            </section>
 
-<!-- SIDEBAR -->
-<aside class="w-72 bg-zinc-900 p-5 flex flex-col gap-4">
+            <section id="clients" class="tab-content hidden">
+                <h2 class="text-2xl font-bold mb-6">Client Management</h2>
+                <div id="clients-list" class="grid grid-cols-1 gap-4"></div>
+            </section>
 
-    <h1 class="text-2xl font-bold text-red-500">LEVELS ADMIN</h1>
+            <section id="transactions" class="tab-content hidden">
+                <h2 class="text-2xl font-bold mb-6">Transaction Monitor</h2>
+                <div id="transactions-list" class="space-y-4"></div>
+            </section>
 
-    <button onclick="switchTab('overview')" class="tab-btn">📊 Overview</button>
-    <button onclick="switchTab('clients')" class="tab-btn">👤 Clients</button>
-    <button onclick="switchTab('transactions')" class="tab-btn">💳 Transactions</button>
-    <button onclick="switchTab('images')" class="tab-btn">🖼 Image Approval</button>
-    <button onclick="switchTab('messages')" class="tab-btn">💬 Messages</button>
-    <button onclick="switchTab('blocked')" class="tab-btn">🚫 Blocked Users</button>
-    <button onclick="switchTab('notifications')" class="tab-btn">🔔 Notifications</button>
-
-</aside>
-
-<!-- MAIN -->
-<main class="flex-1 p-6 overflow-y-auto">
-
-<!-- OVERVIEW -->
-<section id="overview" class="tab">
-    <h2 class="text-2xl font-bold mb-4">Platform Overview</h2>
-
-    <div class="grid grid-cols-3 gap-4">
-
-        <div class="card">👥 Users <p id="total-users">0</p></div>
-        <div class="card">🛍 Products <p id="total-products">0</p></div>
-        <div class="card">💳 Transactions <p id="total-transactions">0</p></div>
-
-        <div class="card">🔥 Active Users <p id="live-users">0</p></div>
-        <div class="card">⚠ Reports <p id="reports">0</p></div>
-        <div class="card">💰 Revenue <p id="revenue">MWK 0</p></div>
-
+            <section id="messages" class="tab-content hidden">
+                <h2 class="text-2xl font-bold mb-6">Broadcast Message</h2>
+                <div class="bg-zinc-900 p-6 rounded-2xl max-w-lg">
+                    <input id="msg-user" placeholder="Recipient Email/ID" class="input mb-4"/>
+                    <textarea id="msg-text" placeholder="Write message here..." class="input h-32 mb-4"></textarea>
+                    <button onclick="sendMessage()" class="btn w-full">Send Message</button>
+                </div>
+            </section>
+        </main>
     </div>
-</section>
 
-<!-- CLIENTS -->
-<section id="clients" class="tab hidden">
-    <h2 class="text-xl font-bold mb-4">Client Management</h2>
-    <div id="clients-list" class="space-y-3"></div>
-</section>
-
-<!-- TRANSACTIONS -->
-<section id="transactions" class="tab hidden">
-    <h2 class="text-xl font-bold mb-4">Transaction Monitor</h2>
-    <div id="transactions-list"></div>
-</section>
-
-<!-- IMAGE APPROVAL -->
-<section id="images" class="tab hidden">
-    <h2 class="text-xl font-bold mb-4">Image Approval Queue</h2>
-    <div id="image-queue"></div>
-</section>
-
-<!-- MESSAGES -->
-<section id="messages" class="tab hidden">
-    <h2 class="text-xl font-bold mb-4">Send Message to Client</h2>
-
-    <input id="msg-user" placeholder="User Email or ID" class="input"/>
-    <textarea id="msg-text" placeholder="Message..." class="input"></textarea>
-
-    <button onclick="sendMessage()" class="btn">Send Message</button>
-</section>
-
-<!-- BLOCKED USERS -->
-<section id="blocked" class="tab hidden">
-    <h2 class="text-xl font-bold mb-4">Blocked Users</h2>
-    <div id="blocked-list"></div>
-</section>
-
-<!-- NOTIFICATIONS -->
-<section id="notifications" class="tab hidden">
-    <h2 class="text-xl font-bold mb-4">System Notifications</h2>
-    <div id="notifications-list"></div>
-</section>
-
-</main>
-
-</div>
-
-<script src="admin.js"></script>
+    <script src="admin.js"></script>
 </body>
 </html>
