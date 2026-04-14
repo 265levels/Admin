@@ -3,11 +3,13 @@ const AUTHORIZED_EMAILS = ["dalitsokaputa7@gmail.com"]; // ADD YOUR EMAIL HERE
 
 // 2. AUTH FUNCTIONS
 async function login() {
+    console.log("Login button clicked"); // Check your console to see if this prints
     const provider = new firebase.auth.GoogleAuthProvider();
     try {
         await firebase.auth().signInWithPopup(provider);
     } catch (error) {
-        console.error("Login Failed", error);
+        console.error("Detailed Auth Error:", error);
+        alert("Firebase Auth Error: " + error.message);
     }
 }
 
