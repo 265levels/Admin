@@ -20,12 +20,13 @@
           </button>
           <p id="login-error" class="text-red-500 mt-4 text-sm hidden">Access Denied: Email not authorized.</p>
     </div>
-    
+
     <header class="lg:hidden bg-zinc-900 p-4 border-b border-zinc-800 flex justify-between items-center sticky top-0 z-50">
-        <h1 class="text-xl font-black text-red-500 tracking-tighter">LEVELS</h1>
-        <button onclick="toggleMenu()" class="p-2 bg-zinc-800 rounded-lg">
-            <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
-        </button>
+           <h1 class="text-xl font-black text-red-500 tracking-tighter">LEVELS</h1>
+           <div id="current-user" class="text-sm text-zinc-400"></div>
+           <button onclick="toggleMenu()" class="p-2 bg-zinc-800 rounded-lg">
+                  <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+           </button>
     </header>
 
     <div class="flex flex-col lg:flex-row h-screen overflow-hidden">
