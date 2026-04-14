@@ -1,0 +1,39 @@
+body {
+    font-family: Inter, sans-serif;
+}
+
+.tab-btn {
+    padding: 12px;
+    background: #18181b;
+    border-radius: 12px;
+    text-align: left;
+    transition: 0.2s;
+}
+
+.tab-btn:hover {
+    background: #27272a;
+}
+
+.card {
+    background: #18181b;
+    padding: 20px;
+    border-radius: 16px;
+    font-weight: bold;
+}
+
+.input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    background: #18181b;
+    border: 1px solid #333;
+    color: white;
+}
+
+.btn {
+    padding: 12px 18px;
+    background: #e11d48;
+    border-radius: 10px;
+    font-weight: bold;
+}
