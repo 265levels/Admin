@@ -1,12 +1,12 @@
 {
   "name": "levels-admin",
   "version": "1.0.0",
-  "description": "Admin panel for Levels",
-  "main": "admin.js",
+  "description": "Admin panel for Levels Ecommerce",
+  "main": "index.html",
   "scripts": {
     "start": "npx serve ."
   },
   "dependencies": {
-    "serve": "^14.0.0"
+    "serve": "^14.2.0"
   }
 }
