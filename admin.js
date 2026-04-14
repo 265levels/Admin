@@ -1,3 +1,18 @@
+// ================= MOBILE NAVIGATION =================
+function toggleMenu() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('hidden');
+    sidebar.classList.toggle('flex');
+}
+
+// Special switch tab function that closes the menu on mobile after clicking
+function switchTabMobile(tabId) {
+    switchTab(tabId); // Call original function
+    if (window.innerWidth < 1024) { // 1024px is the Tailwind 'lg' breakpoint
+        toggleMenu();
+    }
+}
+
 // 1. FIREBASE CONFIGURATION (Linked to levels-ecommerce)
 const firebaseConfig = {
   apiKey: "AIzaSyCPUBkJzJhLUVD0qXMg2_tyvsZ9ZxtfWuc",
