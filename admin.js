@@ -40,11 +40,6 @@ function updateOverviewStats() {
         });
 }
 
-// Update the startup section at the bottom of your admin.js
-loadClients();
-loadTransactions();
-loadImages();
-updateOverviewStats(); // <--- Add this line here
 
 // ================= CLIENT SEARCH & RENDERING =================
 async function searchClients() {
@@ -185,3 +180,4 @@ async function sendMessage() {
 loadClients();
 loadTransactions();
 loadImages();
+updateOverviewStats(); 
