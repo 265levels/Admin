@@ -19,6 +19,33 @@ function switchTab(tabId) {
     document.getElementById(tabId).classList.remove("hidden");
 }
 
+// ================= OVERVIEW MONITORS =================
+function updateOverviewStats() {
+    // Live Pending Images
+    db.collection("products").where("status", "==", "pending")
+        .onSnapshot(snap => {
+            document.getElementById('counter-pending-images').innerText = snap.size;
+        });
+
+    // Live Queue Transactions
+    db.collection("transactions").where("status", "==", "pending")
+        .onSnapshot(snap => {
+            document.getElementById('counter-queue-transactions').innerText = snap.size;
+        });
+
+    // Live Failed Transactions
+    db.collection("transactions").where("status", "==", "failed")
+        .onSnapshot(snap => {
+            document.getElementById('counter-failed-transactions').innerText = snap.size;
+        });
+}
+
+// Update the startup section at the bottom of your admin.js
+loadClients();
+loadTransactions();
+loadImages();
+updateOverviewStats(); // <--- Add this line here
+
 // ================= CLIENT SEARCH & RENDERING =================
 async function searchClients() {
     const type = document.getElementById("search-type").value;
