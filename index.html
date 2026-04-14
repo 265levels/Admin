@@ -11,83 +11,87 @@
 </head>
 
 <body class="bg-zinc-950 text-white font-sans">
-    <div class="flex h-screen overflow-hidden">
+    
+    <header class="lg:hidden bg-zinc-900 p-4 border-b border-zinc-800 flex justify-between items-center sticky top-0 z-50">
+        <h1 class="text-xl font-black text-red-500 tracking-tighter">LEVELS</h1>
+        <button onclick="toggleMenu()" class="p-2 bg-zinc-800 rounded-lg">
+            <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+        </button>
+    </header>
+
+    <div class="flex flex-col lg:flex-row h-screen overflow-hidden">
         
-        <aside class="w-72 bg-zinc-900 p-6 flex flex-col gap-2 border-r border-zinc-800">
-            <h1 class="text-2xl font-black text-red-500 mb-6 tracking-tighter">LEVELS ADMIN</h1>
+        <aside id="sidebar" class="hidden lg:flex w-full lg:w-72 bg-zinc-900 p-6 flex-col gap-2 border-r border-zinc-800 absolute lg:relative z-40 h-full transition-all">
+            <h1 class="hidden lg:block text-2xl font-black text-red-500 mb-6 tracking-tighter">LEVELS ADMIN</h1>
             <nav class="flex flex-col gap-2">
-                <button onclick="switchTab('overview')" class="tab-btn">📊 Overview</button>
-                <button onclick="switchTab('clients')" class="tab-btn">👤 Clients</button>
-                <button onclick="switchTab('transactions')" class="tab-btn">💳 Transactions</button>
-                <button onclick="switchTab('images')" class="tab-btn">🖼 Image Approval</button>
-                <button onclick="switchTab('messages')" class="tab-btn">💬 Messages</button>
+                <button onclick="switchTabMobile('overview')" class="tab-btn">📊 Overview</button>
+                <button onclick="switchTabMobile('clients')" class="tab-btn">👤 Clients</button>
+                <button onclick="switchTabMobile('transactions')" class="tab-btn">💳 Transactions</button>
+                <button onclick="switchTabMobile('images')" class="tab-btn">🖼 Image Approval</button>
+                <button onclick="switchTabMobile('messages')" class="tab-btn">💬 Messages</button>
             </nav>
         </aside>
 
-        <main class="flex-1 p-8 overflow-y-auto">
-            
-            <!-- OVERVIEW SECTION -->
+        <main class="flex-1 p-4 lg:p-8 overflow-y-auto">
             <section id="overview" class="tab-content">
-                <h2 class="text-3xl font-bold mb-6">Platform Overview</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
-                <div class="card border-t-4 border-yellow-500 text-center">
-                <span class="text-zinc-400 text-xs uppercase font-bold tracking-widest">Pending Images</span>
-                <p id="counter-pending-images" class="text-5xl font-black mt-4 text-yellow-500">0</p>
-            </div>
-
-            <div class="card border-t-4 border-blue-500 text-center">
-                <span class="text-zinc-400 text-xs uppercase font-bold tracking-widest">Queue Transactions</span>
-                <p id="counter-queue-transactions" class="text-5xl font-black mt-4 text-blue-500">0</p>
-            </div>
-    
-            <div class="card border-t-4 border-red-500 text-center">
-                <span class="text-zinc-400 text-xs uppercase font-bold tracking-widest">Failed Transactions</span>
-                <p id="counter-failed-transactions" class="text-5xl font-black mt-4 text-red-500">0</p>
-            </div>
-
-            </div>
+                <h2 class="text-2xl lg:text-3xl font-bold mb-6">Platform Overview</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+                    <div class="card border-t-4 border-yellow-500 text-center">
+                        <span class="text-zinc-400 text-xs uppercase font-bold tracking-widest">Pending Images</span>
+                        <p id="counter-pending-images" class="text-4xl lg:text-5xl font-black mt-2 lg:mt-4 text-yellow-500">0</p>
+                    </div>
+                    <div class="card border-t-4 border-blue-500 text-center">
+                        <span class="text-zinc-400 text-xs uppercase font-bold tracking-widest">Queue Transactions</span>
+                        <p id="counter-queue-transactions" class="text-4xl lg:text-5xl font-black mt-2 lg:mt-4 text-blue-500">0</p>
+                    </div>
+                    <div class="card border-t-4 border-red-500 text-center">
+                        <span class="text-zinc-400 text-xs uppercase font-bold tracking-widest">Failed Transactions</span>
+                        <p id="counter-failed-transactions" class="text-4xl lg:text-5xl font-black mt-2 lg:mt-4 text-red-500">0</p>
+                    </div>
+                </div>
+                <div class="mt-6 card text-center">
+                    <span class="text-zinc-400 text-sm uppercase font-semibold tracking-widest">Total Users</span>
+                    <p id="total-users" class="text-4xl lg:text-5xl font-black mt-2 lg:mt-4 text-white">0</p>
+                </div>
             </section>
 
             <section id="clients" class="tab-content hidden">
-                <h2 class="text-2xl font-bold mb-6">Client Management</h2>
-                
-                <div class="flex gap-2 mb-6 bg-zinc-900 p-4 rounded-xl border border-zinc-800">
-                    <select id="search-type" class="bg-zinc-800 border border-zinc-700 rounded-lg px-3 text-sm outline-none focus:border-red-500 text-white">
+                <h2 class="text-2xl font-bold mb-6">Clients</h2>
+                <div class="flex flex-col sm:flex-row gap-2 mb-6 bg-zinc-900 p-4 rounded-xl border border-zinc-800">
+                    <select id="search-type" class="bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-sm text-white outline-none">
                         <option value="email">Email</option>
-                        <option value="phone">Phone Number</option>
-                        <option value="transactionId">Transaction ID</option>
+                        <option value="phone">Phone</option>
+                        <option value="transactionId">Trans ID</option>
                     </select>
-                    <input id="client-search-input" type="text" placeholder="Enter details..." class="input flex-1 !mb-0"/>
-                    <button onclick="searchClients()" class="btn px-6 py-2">🔍 Search</button>
-                    <button onclick="loadClients()" class="btn-outline">Reset</button>
+                    <input id="client-search-input" type="text" placeholder="Search..." class="input !mb-0 flex-1"/>
+                    <div class="flex gap-2">
+                        <button onclick="searchClients()" class="btn flex-1 py-2">Search</button>
+                        <button onclick="loadClients()" class="btn-outline flex-1">Reset</button>
+                    </div>
                 </div>
-
                 <div id="clients-list" class="space-y-4"></div>
             </section>
 
             <section id="transactions" class="tab-content hidden">
-                <h2 class="text-2xl font-bold mb-6">Transaction Monitor</h2>
+                <h2 class="text-2xl font-bold mb-6">Transactions</h2>
                 <div id="transactions-list" class="space-y-4"></div>
             </section>
 
             <section id="images" class="tab-content hidden">
-                <h2 class="text-2xl font-bold mb-6">Product Image Approval</h2>
-                <div id="image-queue" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                <h2 class="text-2xl font-bold mb-6">Approvals</h2>
+                <div id="image-queue" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
             </section>
 
             <section id="messages" class="tab-content hidden">
-                <h2 class="text-2xl font-bold mb-6">Broadcast Message</h2>
-                <div class="bg-zinc-900 p-6 rounded-2xl max-w-lg border border-zinc-800">
-                    <input id="msg-user" placeholder="Recipient Email or ID" class="input mb-4"/>
-                    <textarea id="msg-text" placeholder="Write message here..." class="input h-32 mb-4"></textarea>
-                    <button onclick="sendMessage()" class="btn w-full hover:bg-red-700 transition">Send Message</button>
+                <h2 class="text-2xl font-bold mb-6">Broadcast</h2>
+                <div class="bg-zinc-900 p-6 rounded-2xl border border-zinc-800">
+                    <input id="msg-user" placeholder="Recipient" class="input mb-4"/>
+                    <textarea id="msg-text" placeholder="Message" class="input h-32 mb-4"></textarea>
+                    <button onclick="sendMessage()" class="btn w-full">Send</button>
                 </div>
             </section>
-
         </main>
     </div>
-
     <script src="admin.js"></script>
 </body>
 </html>
