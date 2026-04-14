@@ -1,3 +1,50 @@
+// 1. AUTH CONFIG
+const AUTHORIZED_EMAILS = ["dalitsokaputa7@gmail.com"]; // ADD YOUR EMAIL HERE
+
+// 2. AUTH FUNCTIONS
+async function login() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try {
+        await firebase.auth().signInWithPopup(provider);
+    } catch (error) {
+        console.error("Login Failed", error);
+    }
+}
+
+function logout() {
+    firebase.auth().signOut().then(() => {
+        location.reload();
+    });
+}
+
+// 3. AUTH LISTENER (This controls the Gatekeeper)
+firebase.auth().onAuthStateChanged((user) => {
+    const overlay = document.getElementById('login-overlay');
+    const errorMsg = document.getElementById('login-error');
+
+    if (user) {
+        if (AUTHORIZED_EMAILS.includes(user.email)) {
+            // SUCCESS: User is logged in and authorized
+            overlay.classList.add('hidden');
+            console.log("Welcome, Admin:", user.email);
+            
+            // Start loading data ONLY after login
+            loadClients();
+            loadTransactions();
+            loadImages();
+            updateOverviewStats();
+        } else {
+            // REJECTED: Logged in but not an admin
+            firebase.auth().signOut();
+            errorMsg.classList.remove('hidden');
+            errorMsg.innerText = "Access Denied: " + user.email + " is not authorized.";
+        }
+    } else {
+        // NOT LOGGED IN
+        overlay.classList.remove('hidden');
+    }
+});
+
 // ================= MOBILE NAVIGATION =================
 function toggleMenu() {
     const sidebar = document.getElementById('sidebar');
