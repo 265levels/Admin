@@ -1,5 +1,5 @@
 // 1. AUTH CONFIG
-const AUTHORIZED_EMAILS = ["dalitsokaputa7@gmail.com"]; // ADD YOUR EMAIL HERE
+const AUTHORIZED_EMAILS = ["dalitsokaputa7@gmail.com"]; // ADD YOUR EMAIL HERE 
 
 // 2. AUTH FUNCTIONS
 async function login() {
