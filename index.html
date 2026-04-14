@@ -11,6 +11,15 @@
 </head>
 
 <body class="bg-zinc-950 text-white font-sans">
+    <div id="login-overlay" class="fixed inset-0 bg-zinc-950 z-[100] flex flex-col items-center justify-center p-6">
+          <h1 class="text-4xl font-black text-red-500 mb-2 tracking-tighter">LEVELS ADMIN</h1>
+          <p class="text-zinc-400 mb-8 text-center">Authorized Personnel Only</p>
+          <button onclick="login()" class="bg-white text-black px-8 py-3 rounded-full font-bold flex items-center gap-3 hover:bg-zinc-200 transition">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5">
+          Sign in with Google
+          </button>
+          <p id="login-error" class="text-red-500 mt-4 text-sm hidden">Access Denied: Email not authorized.</p>
+    </div>
     
     <header class="lg:hidden bg-zinc-900 p-4 border-b border-zinc-800 flex justify-between items-center sticky top-0 z-50">
         <h1 class="text-xl font-black text-red-500 tracking-tighter">LEVELS</h1>
