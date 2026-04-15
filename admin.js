@@ -14,7 +14,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 // 2. AUTH CONFIG & GATEKEEPER
-const AUTHORIZED_EMAILS = ["dalitsokaputa7@gmail.com", "codesoftmalawi@gmail.com"]; 
+const AUTHORIZED_EMAILS = ["dalitsokaputa7@gmail.com"]; 
 
 async function login() {
     console.log("Attempting login...");
