@@ -1,112 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Levels Admin Control Center</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="admin.css"/>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Levels Admin Control Center</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="admin.css"/>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 </head>
 
 <body class="bg-zinc-950 text-white font-sans">
-    <div id="login-overlay" class="fixed inset-0 bg-zinc-950 z-[100] flex flex-col items-center justify-center p-6">
-          <h1 class="text-4xl font-black text-red-500 mb-2 tracking-tighter">LEVELS ADMIN</h1>
-          <p class="text-zinc-400 mb-8 text-center">Authorized Personnel Only</p>
-          <button onclick="login()" class="bg-white text-black px-8 py-3 rounded-full font-bold flex items-center gap-3 hover:bg-zinc-200 transition">
-          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5">
-          Sign in with Google
-          </button>
-          <p id="login-error" class="text-red-500 mt-4 text-sm hidden">Access Denied: Email not authorized.</p>
-    </div>
+  <!-- Login Overlay -->
+  <div id="login-overlay" class="fixed inset-0 bg-zinc-950 z-[100] flex flex-col items-center justify-center p-6">
+    <h1 class="text-4xl font-black text-red-500 mb-2 tracking-tighter">LEVELS ADMIN</h1>
+    <p class="text-zinc-400 mb-8 text-center">Authorized Personnel Only</p>
+    <button onclick="login()" class="bg-white text-black px-8 py-3 rounded-full font-bold flex items-center gap-3 hover:bg-zinc-200 transition">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5">
+      Sign in with Google
+    </button>
+    <p id="login-error" class="text-red-500 mt-4 text-sm hidden">Access Denied: Email not authorized.</p>
+  </div>
 
-    <header class="lg:hidden bg-zinc-900 p-4 border-b border-zinc-800 flex justify-between items-center sticky top-0 z-50">
-           <h1 class="text-xl font-black text-red-500 tracking-tighter">LEVELS</h1>
-           <div id="current-user" class="text-sm text-zinc-400"></div>
-           <button onclick="toggleMenu()" class="p-2 bg-zinc-800 rounded-lg">
-                  <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
-           </button>
-    </header>
+  <!-- Mobile Header -->
+  <header class="lg:hidden bg-zinc-900 p-4 border-b border-zinc-800 flex justify-between items-center sticky top-0 z-50">
+    <h1 class="text-xl font-black text-red-500 tracking-tighter">LEVELS</h1>
+    <div id="current-user" class="text-sm text-zinc-400"></div>
+    <button onclick="toggleMenu()" class="p-2 bg-zinc-800 rounded-lg">☰</button>
+  </header>
 
-    <div class="flex flex-col lg:flex-row h-screen overflow-hidden">
-        
-        <aside id="sidebar" class="hidden lg:flex w-full lg:w-72 bg-zinc-900 p-6 flex-col gap-2 border-r border-zinc-800 absolute lg:relative z-40 h-full transition-all">
-            <h1 class="hidden lg:block text-2xl font-black text-red-500 mb-6 tracking-tighter">LEVELS ADMIN</h1>
-            <nav class="flex flex-col gap-2">
-                <button onclick="switchTabMobile('overview')" class="tab-btn">📊 Overview</button>
-                <button onclick="switchTabMobile('clients')" class="tab-btn">👤 Clients</button>
-                <button onclick="switchTabMobile('transactions')" class="tab-btn">💳 Transactions</button>
-                <button onclick="switchTabMobile('images')" class="tab-btn">🖼 Image Approval</button>
-                <button onclick="switchTabMobile('messages')" class="tab-btn">💬 Messages</button>
-            </nav>
-        </aside>
+  <div class="flex flex-col lg:flex-row h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="hidden lg:flex w-full lg:w-72 bg-zinc-900 p-6 flex-col gap-2 border-r border-zinc-800 absolute lg:relative z-40 h-full transition-all">
+      <h1 class="hidden lg:block text-2xl font-black text-red-500 mb-6 tracking-tighter">LEVELS ADMIN</h1>
+      <nav class="flex flex-col gap-2">
+        <button onclick="switchTabMobile('overview')" class="tab-btn">📊 Overview</button>
+        <button onclick="switchTabMobile('clients')" class="tab-btn">👤 Clients</button>
+        <button onclick="switchTabMobile('transactions')" class="tab-btn">💳 Transactions</button>
+        <button onclick="switchTabMobile('images')" class="tab-btn">🖼 Image Approval</button>
+        <button onclick="switchTabMobile('messages')" class="tab-btn">💬 Messages</button>
+        <button onclick="logout()" class="tab-btn text-red-500">🚪 Logout</button>
+      </nav>
+    </aside>
 
-        <main class="flex-1 p-4 lg:p-8 overflow-y-auto">
-            <section id="overview" class="tab-content">
-                <h2 class="text-2xl lg:text-3xl font-bold mb-6">Platform Overview</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-                    <div class="card border-t-4 border-yellow-500 text-center">
-                        <span class="text-zinc-400 text-xs uppercase font-bold tracking-widest">Pending Images</span>
-                        <p id="counter-pending-images" class="text-4xl lg:text-5xl font-black mt-2 lg:mt-4 text-yellow-500">0</p>
-                    </div>
-                    <div class="card border-t-4 border-blue-500 text-center">
-                        <span class="text-zinc-400 text-xs uppercase font-bold tracking-widest">Queue Transactions</span>
-                        <p id="counter-queue-transactions" class="text-4xl lg:text-5xl font-black mt-2 lg:mt-4 text-blue-500">0</p>
-                    </div>
-                    <div class="card border-t-4 border-red-500 text-center">
-                        <span class="text-zinc-400 text-xs uppercase font-bold tracking-widest">Failed Transactions</span>
-                        <p id="counter-failed-transactions" class="text-4xl lg:text-5xl font-black mt-2 lg:mt-4 text-red-500">0</p>
-                    </div>
-                </div>
-                <div class="mt-6 card text-center">
-                    <span class="text-zinc-400 text-sm uppercase font-semibold tracking-widest">Total Users</span>
-                    <p id="total-users" class="text-4xl lg:text-5xl font-black mt-2 lg:mt-4 text-white">0</p>
-                </div>
-            </section>
+    <!-- Main Content -->
+    <main class="flex-1 p-4 lg:p-8 overflow-y-auto">
+      <section id="overview" class="tab-content">
+        <h2 class="text-2xl lg:text-3xl font-bold mb-6">Platform Overview</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+          <div class="card border-t-4 border-yellow-500 text-center">
+            <span class="text-zinc-400 text-xs uppercase font-bold tracking-widest">Pending Images</span>
+            <p id="counter-pending-images" class="text-4xl lg:text-5xl font-black mt-2 lg:mt-4 text-yellow-500">0</p>
+          </div>
+          <div class="card border-t-4 border-blue-500 text-center">
+            <span class="text-zinc-400 text-xs uppercase font-bold tracking-widest">Queue Transactions</span>
+            <p id="counter-queue-transactions" class="text-4xl lg:text-5xl font-black mt-2 lg:mt-4 text-blue-500">0</p>
+          </div>
+          <div class="card border-t-4 border-red-500 text-center">
+            <span class="text-zinc-400 text-xs uppercase font-bold tracking-widest">Failed Transactions</span>
+            <p id="counter-failed-transactions" class="text-4xl lg:text-5xl font-black mt-2 lg:mt-4 text-red-500">0</p>
+          </div>
+        </div>
+        <div class="mt-6 card text-center">
+          <span class="text-zinc-400 text-sm uppercase font-semibold tracking-widest">Total Users</span>
+          <p id="total-users" class="text-4xl lg:text-5xl font-black mt-2 lg:mt-4 text-white">0</p>
+        </div>
+      </section>
 
-            <section id="clients" class="tab-content hidden">
-                <h2 class="text-2xl font-bold mb-6">Clients</h2>
-                <div class="flex flex-col sm:flex-row gap-2 mb-6 bg-zinc-900 p-4 rounded-xl border border-zinc-800">
-                    <select id="search-type" class="bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-sm text-white outline-none">
-                        <option value="email">Email</option>
-                        <option value="phone">Phone</option>
-                        <option value="transactionId">Trans ID</option>
-                    </select>
-                    <input id="client-search-input" type="text" placeholder="Search..." class="input !mb-0 flex-1"/>
-                    <div class="flex gap-2">
-                        <button onclick="searchClients()" class="btn flex-1 py-2">Search</button>
-                        <button onclick="loadClients()" class="btn-outline flex-1">Reset</button>
-                    </div>
-                </div>
-                <div id="clients-list" class="space-y-4"></div>
-            </section>
+      <section id="clients" class="tab-content hidden">
+        <h2 class="text-2xl font-bold mb-6">Clients</h2>
+        <div class="flex flex-col sm:flex-row gap-2 mb-6 bg-zinc-900 p-4 rounded-xl border border-zinc-800">
+          <select id="search-type" class="input">
+            <option value="email">Email</option>
+            <option value="phone">Phone</option>
+            <option value="transactionId">Trans ID</option>
+          </select>
+          <input id="client-search-input" type="text" placeholder="Search..." class="input flex-1"/>
+          <div class="flex gap-2">
+            <button onclick="searchClients()" class="btn flex-1 py-2">Search</button>
+            <button onclick="loadClientsRealtime()" class="btn-outline flex-1">Reset</button>
+          </div>
+        </div>
+        <div id="clients-list" class="space-y-4"></div>
+      </section>
 
-            <section id="transactions" class="tab-content hidden">
-                <h2 class="text-2xl font-bold mb-6">Transactions</h2>
-                <div id="transactions-list" class="space-y-4"></div>
-            </section>
+      <section id="transactions" class="tab-content hidden">
+        <h2 class="text-2xl font-bold mb-6">Transactions</h2>
+        <div id="transactions-list" class="space-y-4"></div>
+      </section>
 
-            <section id="images" class="tab-content hidden">
-                <h2 class="text-2xl font-bold mb-6">Approvals</h2>
-                <div id="image-queue" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
-            </section>
+      <section id="images" class="tab-content hidden">
+        <h2 class="text-2xl font-bold mb-6">Approvals</h2>
+        <div id="image-queue" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+      </section>
 
-            <section id="messages" class="tab-content hidden">
-                <h2 class="text-2xl font-bold mb-6">Broadcast</h2>
-                <div class="bg-zinc-900 p-6 rounded-2xl border border-zinc-800">
-                    <input id="msg-user" placeholder="Recipient" class="input mb-4"/>
-                    <textarea id="msg-text" placeholder="Message" class="input h-32 mb-4"></textarea>
-                    <button onclick="sendMessage()" class="btn w-full">Send</button>
-                </div>
-            </section>
-        </main>
-    </div>
+      <section id="messages" class="tab-content hidden">
+        <h2 class="text-2xl font-bold mb-6">Broadcast</h2>
+        <div class="bg-zinc-900 p-6 rounded-2xl border border-zinc-800">
+          <input id="msg-user" placeholder="Recipient" class="input mb-4"/>
+          <textarea id="msg-text" placeholder="Message" class="input h-32 mb-4"></textarea>
+          <button onclick="sendMessage()" class="btn w-full">Send</button>
+        </div>
+      </section>
+    </main>
+  </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <!-- Toast container -->
+  <div id="toast-container" class="fixed bottom-4 right-4 space-y-2 z-50"></div>
 
-<script src="admin.js"></script>
+  <script src="admin.js"></script>
 </body>
-                                                                                            </html>
+    </html>
