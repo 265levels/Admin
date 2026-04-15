@@ -21,32 +21,34 @@
           <p id="login-error" class="text-red-500 mt-4 text-sm hidden">Access Denied: Email not authorized.</p>
     </div>
 
-    <!-- FIXED HEADER -->
+    <!-- FIXED HEADER - Hamburger hidden on desktop -->
     <header class="bg-zinc-900 p-4 border-b border-zinc-800 flex justify-between items-center sticky top-0 z-50">
-        <h1 class="text-xl font-black text-red-500 tracking-tighter">LEVELS</h1>
-        
-        <div class="flex items-center gap-4">
-            <div id="current-user" class="text-sm text-zinc-400 hidden md:block"></div>
+         <h1 class="text-xl font-black text-red-500 tracking-tighter">LEVELS</h1>
+    
+         <div class="flex items-center gap-4">
+         <!-- Current User -->
+         <div id="current-user" class="text-sm text-zinc-400 hidden md:block"></div>
 
-            <!-- Logout Button - Desktop Only -->
-            <button onclick="logout()" 
-                    class="hidden lg:flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-zinc-800 hover:bg-red-900 hover:text-red-400 text-sm font-medium transition-all">
+         <!-- Logout Button - Visible only on Desktop (lg and above) -->
+         <button onclick="logout()" 
+               class="hidden lg:flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-zinc-800 hover:bg-red-900 hover:text-red-400 text-sm font-medium transition-all">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4V7m-4 4V7" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4V7m-4 4V7" />
                 </svg>
                 Logout
-            </button>
+         </button>
 
-            <!-- Hamburger - Mobile Only -->
-            <button onclick="toggleMenu()" class="lg:hidden p-3 bg-zinc-800 rounded-xl">
+         <!-- Hamburger Button - Visible ONLY on Mobile -->
+         <button onclick="toggleMenu()" 
+                class="lg:hidden p-3 bg-zinc-800 rounded-xl">
                 <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
                 </svg>
-            </button>
-        </div>
-    </header>
+         </button>
+         </div>
+       </header>
 
-    <div class="flex flex-1 flex-col lg:flex-row overflow-hidden">
+         <div class="flex flex-1 flex-col lg:flex-row overflow-hidden">
         
         <!-- SIDEBAR -->
         <aside id="sidebar" class="hidden lg:flex w-full lg:w-72 bg-zinc-900 p-6 flex-col gap-2 border-r border-zinc-800 absolute lg:relative z-40 h-full transition-all">
