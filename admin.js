@@ -124,3 +124,27 @@ function switchTab(tabId) {
     btn.classList.toggle("active", isActive);
   });
 }
+
+// --- Mobile Sidebar Toggle ---
+function toggleMenu() {
+  const sidebar = document.getElementById("sidebar");
+  
+  // This toggles the 'hidden' class that Tailwind uses
+  if (sidebar.classList.contains("hidden")) {
+    sidebar.classList.remove("hidden");
+    // Ensure it covers the screen on mobile
+    sidebar.classList.add("fixed", "inset-0", "w-full");
+  } else {
+    sidebar.classList.add("hidden");
+    sidebar.classList.remove("fixed", "inset-0", "w-full");
+  }
+}
+
+// Close sidebar automatically when a tab is clicked (for mobile UX)
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (window.innerWidth < 1024) { // 1024px is the 'lg' breakpoint in Tailwind
+      document.getElementById("sidebar").classList.add("hidden");
+    }
+  });
+});
