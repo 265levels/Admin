@@ -1,4 +1,7 @@
-/* --- BASE STYLES --- */
+/* ======================
+   LEVELS ADMIN - admin.css
+   ====================== */
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -9,35 +12,40 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
+    font-family: 'Inter', system-ui, sans-serif;
 }
 
-/* --- NAVIGATION & SIDEBAR --- */
+/* ======================
+   SIDEBAR & NAVIGATION
+   ====================== */
+
 #sidebar {
-    /* Height of the mobile header is 65px */
-    top: 65px; 
-    left: 0;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    top: 65px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* On Desktop: Reset sidebar position */
 @media (min-width: 1024px) {
     #sidebar {
         top: 0;
-        display: flex !important; /* Force flex on desktop */
+        display: flex !important;
     }
 }
 
 .tab-btn {
     width: 100%;
-    padding: 12px 16px;
+    padding: 14px 20px;
     border-radius: 12px;
     text-align: left;
     color: #a1a1aa;
     font-weight: 500;
-    transition: 0.2s ease;
+    font-size: 15px;
+    transition: all 0.2s ease;
     background: transparent;
     border: none;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .tab-btn:hover {
@@ -45,78 +53,80 @@ body {
     color: white;
 }
 
-/* --- CARDS & LAYOUT --- */
+.tab-btn.active {
+    background: #3f3f46;
+    color: white;
+    font-weight: 600;
+}
+
+/* ======================
+   CARDS
+   ====================== */
+
 .card {
     background: #18181b;
     padding: 24px;
     border-radius: 16px;
     border: 1px solid #27272a;
-    word-wrap: break-word; /* Important for long IDs on mobile */
-    transition: transform 0.2s ease;
+    transition: all 0.3s ease;
 }
 
 .card:hover {
-    border-color: #3f3f46;
+    border-color: #52525b;
+    transform: translateY(-2px);
 }
 
-/* --- FORM ELEMENTS --- */
+/* ======================
+   FORM ELEMENTS
+   ====================== */
+
 .input {
     width: 100%;
-    padding: 12px;
-    margin-bottom: 10px;
-    border-radius: 10px;
+    padding: 14px 16px;
+    border-radius: 12px;
     background: #09090b;
     border: 1px solid #27272a;
     color: white;
+    font-size: 16px;
     outline: none;
-    font-size: 16px; /* Prevents iOS auto-zoom on focus */
+    transition: all 0.2s ease;
 }
 
 .input:focus {
     border-color: #e11d48;
-    box-shadow: 0 0 0 2px rgba(225, 29, 72, 0.1);
+    box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.15);
 }
 
-select.input {
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a1a1aa'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 16px;
-    padding-right: 40px;
-}
+/* ======================
+   BUTTONS
+   ====================== */
 
-/* --- BUTTONS --- */
 .btn {
-    padding: 12px 20px;
+    padding: 12px 24px;
     background: #e11d48;
     color: white;
-    border-radius: 10px;
-    font-weight: bold;
+    border-radius: 12px;
+    font-weight: 600;
     border: none;
     cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s;
+    transition: all 0.2s ease;
 }
 
 .btn:hover {
     background: #be123c;
+    transform: translateY(-1px);
 }
 
 .btn-outline {
-    padding: 8px 16px;
+    padding: 10px 20px;
     background: transparent;
     border: 1px solid #3f3f46;
     color: #d4d4d8;
-    border-radius: 10px;
+    border-radius: 12px;
     font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    transition: all 0.2s ease;
 }
 
 .btn-outline:hover {
@@ -125,42 +135,102 @@ select.input {
     color: white;
 }
 
-/* --- IMAGE QUEUE RESPONSIVENESS --- */
+/* ======================
+   IMAGE QUEUE
+   ====================== */
+
 #image-queue img {
-    width: 100%;
-    aspect-ratio: 1/1;
+    width: 110px;
+    height: 110px;
     object-fit: cover;
-    border-radius: 8px;
+    border-radius: 12px;
     border: 1px solid #27272a;
 }
 
-/* --- ANIMATIONS --- */
+/* ======================
+   TOAST NOTIFICATIONS
+   ====================== */
+
+#toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.toast-success { 
+    background: #16a34a; 
+    color: white; 
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3);
+}
+
+.toast-error { 
+    background: #dc2626; 
+    color: white; 
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3);
+}
+
+.toast-info { 
+    background: #2563eb; 
+    color: white; 
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3);
+}
+
+/* ======================
+   ANIMATIONS
+   ====================== */
+
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { 
+        opacity: 0; 
+        transform: translateY(15px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
 }
 
 .tab-content {
-    animation: fadeIn 0.3s ease-out;
+    animation: fadeIn 0.4s ease-out forwards;
 }
 
-/* --- CUSTOM SCROLLBAR (For Webkit browsers) --- */
+/* ======================
+   CUSTOM SCROLLBAR
+   ====================== */
+
 ::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
+    height: 6px;
 }
 
 ::-webkit-scrollbar-track {
     background: #09090b;
 }
 
-/* --- TOAST NOTIFICATIONS --- */
-#toast-container div {
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-weight: 500;
-  animation: fadeIn 0.3s ease-out;
+::-webkit-scrollbar-thumb {
+    background: #52525b;
+    border-radius: 20px;
 }
 
-.toast-success { background: #16a34a; color: white; }
-.toast-error { background: #dc2626; color: white; }
-.toast-info { background: #2563eb; color: white; }
+::-webkit-scrollbar-thumb:hover {
+    background: #71717a;
+}
+
+/* ======================
+   RESPONSIVE IMPROVEMENTS
+   ====================== */
+
+@media (max-width: 1024px) {
+    .card {
+        padding: 20px;
+    }
+    
+    #image-queue img {
+        width: 90px;
+        height: 90px;
+    }
+}
