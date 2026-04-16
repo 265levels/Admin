@@ -148,3 +148,107 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     }
   });
 });
+
+
+// --- Image Approval Logic ---
+
+function loadImagesRealtime() {
+    // Listen for items with status 'pending'
+    db.collection("products")
+        .where("status", "==", "pending")
+        .orderBy("postedAt", "desc")
+        .onSnapshot((snapshot) => {
+            const queueContainer = document.getElementById('image-queue');
+            const counter = document.getElementById('counter-pending-images');
+            
+            // Update the Overview Counter instantly
+            if (counter) counter.innerText = snapshot.size;
+
+            if (!queueContainer) return;
+            queueContainer.innerHTML = "";
+
+            if (snapshot.empty) {
+                queueContainer.innerHTML = `
+                    <div class="text-center py-20 bg-zinc-900/50 rounded-3xl border border-dashed border-zinc-800">
+                        <p class="text-zinc-500">No images pending approval.</p>
+                    </div>`;
+                return;
+            }
+
+            snapshot.forEach((doc) => {
+                const product = doc.data();
+                const productId = doc.id;
+
+                const card = `
+                    <div class="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden flex flex-col md:flex-row gap-6 p-6">
+                        <div class="w-full md:w-64 h-48 flex-shrink-0">
+                            <img src="${product.images[0]}" class="w-full h-full object-cover rounded-2xl" alt="Product">
+                        </div>
+
+                        <div class="flex-1 flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-start mb-2">
+                                    <h3 class="text-xl font-bold text-white">${product.title}</h3>
+                                    <span class="bg-red-500/10 text-red-500 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-widest">Pending</span>
+                                </div>
+                                <p class="text-zinc-400 text-sm line-clamp-2 mb-4">${product.description}</p>
+                                
+                                <div class="grid grid-cols-2 gap-4 text-xs">
+                                    <div>
+                                        <p class="text-zinc-500">Price</p>
+                                        <p class="text-white font-mono">MWK ${product.price.toLocaleString()}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-zinc-500">Seller</p>
+                                        <p class="text-white">${product.sellerName}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-3 mt-6">
+                                <button onclick="processApproval('${productId}', 'approved')" 
+                                        class="flex-1 bg-white text-black font-bold py-3 rounded-xl hover:bg-zinc-200 transition-all active:scale-95">
+                                    Approve
+                                </button>
+                                <button onclick="processApproval('${productId}', 'rejected')" 
+                                        class="px-6 bg-zinc-800 text-zinc-400 font-bold py-3 rounded-xl hover:bg-red-600 hover:text-white transition-all">
+                                    Reject
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                queueContainer.innerHTML += card;
+            });
+        });
+}
+
+async function processApproval(id, decision) {
+    try {
+        await db.collection("products").doc(id).update({
+            status: decision,
+            approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        showToast(`Item ${decision === 'approved' ? 'is now live' : 'rejected'}`, "success");
+        logActivity("Product Approval", `Status: ${decision} | ID: ${id}`);
+        
+    } catch (error) {
+        console.error("Approval Error:", error);
+        showToast("Error updating product: " + error.message, "error");
+    }
+}
+
+// --- Placeholder Functions (To be built later) ---
+
+function loadClientsRealtime() {
+    console.log("Clients module: Ready and waiting for code.");
+}
+
+function loadTransactionsRealtime() {
+    console.log("Transactions module: Ready and waiting for code.");
+}
+
+function updateOverviewStats() {
+    console.log("Overview Stats: Ready and waiting for code.");
+}
