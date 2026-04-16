@@ -234,3 +234,18 @@ body {
         height: 90px;
     }
 }
+
+
+#toast-container div {
+    min-width: 300px;
+    animation: slideIn 0.3s ease-out;
+}
+
+.toast-info { background: #ffffff; color: #000000; }
+.toast-success { background: #22c55e; color: #ffffff; }
+.toast-error { background: #ef4444; color: #ffffff; }
+
+@keyframes slideIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
