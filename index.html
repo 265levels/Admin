@@ -1,60 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Levels Admin Control Center</title>
+  
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="admin.css"/>
+  <link rel="stylesheet" href="/admin.css" />
+  
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 </head>
-
 <body class="bg-zinc-950 text-white font-sans">
+
   <!-- Login Overlay -->
   <div id="login-overlay" class="fixed inset-0 bg-zinc-950 z-[100] flex flex-col items-center justify-center p-6">
-    <h1 class="text-4xl font-black text-red-500 mb-2 tracking-tighter">LEVELS ADMIN</h1>
-    <p class="text-zinc-400 mb-8 text-center">Authorized Personnel Only</p>
-    <button onclick="login()" class="bg-white text-black px-8 py-3 rounded-full font-bold flex items-center gap-3 hover:bg-zinc-200 transition">
+    <h1 class="text-5xl font-black text-red-500 mb-2 tracking-tighter">LEVELS</h1>
+    <p class="text-zinc-400 mb-10 text-center">Authorized Personnel Only</p>
+    
+    <button onclick="login()" 
+            class="bg-white text-black px-8 py-4 rounded-2xl font-bold flex items-center gap-3 hover:bg-zinc-100 transition-all active:scale-95 shadow-lg">
       <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5">
       Sign in with Google
     </button>
-    <p id="login-error" class="text-red-500 mt-4 text-sm hidden">Access Denied: Email not authorized.</p>
+    
+    <p id="login-error" class="text-red-500 mt-6 text-sm hidden"></p>
   </div>
 
   <!-- Mobile Header -->
   <header class="lg:hidden bg-zinc-900 p-4 border-b border-zinc-800 flex justify-between items-center sticky top-0 z-50">
-    <h1 class="text-xl font-black text-red-500 tracking-tighter">LEVELS</h1>
+    <h1 class="text-2xl font-black text-red-500 tracking-tighter">LEVELS</h1>
     <div id="current-user" class="text-sm text-zinc-400"></div>
-    <button onclick="toggleMenu()" class="p-2 bg-zinc-800 rounded-lg">☰</button>
+    <button onclick="toggleMenu()" class="p-3 hover:bg-zinc-800 rounded-xl">☰</button>
   </header>
 
   <div class="flex flex-col lg:flex-row h-screen overflow-hidden">
     <!-- Sidebar -->
-    <aside id="sidebar" class="hidden lg:flex w-full lg:w-72 bg-zinc-900 p-6 flex-col gap-2 border-r border-zinc-800 absolute lg:relative z-40 h-full transition-all">
-      <h1 class="hidden lg:block text-2xl font-black text-red-500 mb-6 tracking-tighter">LEVELS ADMIN</h1>
+    <aside id="sidebar" class="hidden lg:flex w-full lg:w-72 bg-zinc-900 p-6 flex-col border-r border-zinc-800 lg:relative absolute inset-y-0 left-0 z-50">
+      <h1 class="hidden lg:block text-3xl font-black text-red-500 mb-8 tracking-tighter">LEVELS ADMIN</h1>
+      
       <nav class="flex flex-col gap-2">
-        <button onclick="switchTabMobile('overview')" class="tab-btn">📊 Overview</button>
-        <button onclick="switchTabMobile('clients')" class="tab-btn">👤 Clients</button>
-        <button onclick="switchTabMobile('transactions')" class="tab-btn">💳 Transactions</button>
-        <button onclick="switchTabMobile('images')" class="tab-btn">🖼 Image Approval</button>
-        <button onclick="switchTabMobile('messages')" class="tab-btn">💬 Messages</button>
-        <button onclick="logout()" class="tab-btn text-red-500">🚪 Logout</button>
+        <button onclick="switchTab('overview')" class="tab-btn active">📊 Overview</button>
+        <button onclick="switchTab('clients')" class="tab-btn">👤 Clients</button>
+        <button onclick="switchTab('transactions')" class="tab-btn">💳 Transactions</button>
+        <button onclick="switchTab('images')" class="tab-btn">🖼 Image Approval</button>
+        <button onclick="switchTab('messages')" class="tab-btn">💬 Messages</button>
+        <button onclick="logout()" class="tab-btn text-red-500 mt-6">🚪 Logout</button>
       </nav>
     </aside>
 
     <!-- Main Content -->
     <main class="flex-1 p-4 lg:p-8 overflow-y-auto">
-      <!-- Overview, Clients, Transactions, Images, Messages sections (unchanged from your working code) -->
-      <!-- ... -->
+      
+      <!-- Overview Tab -->
+      <div id="overview" class="tab-content">
+        <h2 class="text-3xl font-bold mb-8">Overview</h2>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="card">
+            <p class="text-zinc-400 text-sm">Pending Images</p>
+            <p id="counter-pending-images" class="text-4xl font-black text-red-500">0</p>
+          </div>
+          <div class="card">
+            <p class="text-zinc-400 text-sm">Pending Transactions</p>
+            <p id="counter-queue-transactions" class="text-4xl font-black text-amber-500">0</p>
+          </div>
+          <div class="card">
+            <p class="text-zinc-400 text-sm">Failed Transactions</p>
+            <p id="counter-failed-transactions" class="text-4xl font-black text-red-500">0</p>
+          </div>
+          <div class="card">
+            <p class="text-zinc-400 text-sm">Total Users</p>
+            <p id="total-users" class="text-4xl font-black">0</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clients Tab -->
+      <div id="clients" class="tab-content hidden">
+        <h2 class="text-3xl font-bold mb-6">Clients</h2>
+        <div class="flex gap-3 mb-6">
+          <select id="search-type" class="input w-44">
+            <option value="email">Email</option>
+            <option value="phone">Phone</option>
+            <option value="transactionId">Transaction ID</option>
+          </select>
+          <input type="text" id="client-search-input" placeholder="Search..." class="input flex-1" />
+          <button onclick="searchClients()" class="btn">Search</button>
+        </div>
+        <div id="clients-list" class="space-y-4"></div>
+      </div>
+
+      <!-- Transactions Tab -->
+      <div id="transactions" class="tab-content hidden">
+        <h2 class="text-3xl font-bold mb-6">Transactions</h2>
+        <div id="transactions-list" class="space-y-4"></div>
+      </div>
+
+      <!-- Image Approval Tab -->
+      <div id="images" class="tab-content hidden">
+        <h2 class="text-3xl font-bold mb-6">Image Approval</h2>
+        <div id="image-queue" class="space-y-6"></div>
+      </div>
+
+      <!-- Messages Tab -->
+      <div id="messages" class="tab-content hidden">
+        <h2 class="text-3xl font-bold mb-6">Messages</h2>
+        <p class="text-zinc-500">Messages module coming soon...</p>
+      </div>
     </main>
   </div>
 
-  <!-- Toast container -->
-  <div id="toast-container" class="fixed bottom-4 right-4 space-y-2 z-50"></div>
+  <!-- Toast Container -->
+  <div id="toast-container" class="fixed bottom-6 right-6 space-y-3 z-50"></div>
 
-  <script src="admin.js"></script>
+  <script src="/admin.js" defer></script>
 </body>
 </html>
