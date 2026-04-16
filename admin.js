@@ -117,6 +117,10 @@ function switchTab(tabId) {
   const activeTab = document.getElementById(tabId);
   if (activeTab) activeTab.classList.remove("hidden");
 
-  // Update active button
+  // Update active button styling
   document.querySelectorAll(".tab-btn").forEach(btn => {
-    btn.classList.toggle("active", btn.getAttribute("onclick") ===
+    // This checks if the button's onclick contains the tabId string
+    const isActive = btn.getAttribute("onclick").includes(tabId);
+    btn.classList.toggle("active", isActive);
+  });
+}
