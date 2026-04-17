@@ -254,29 +254,3 @@ function updateOverviewStats() {
 }
 
 
-function loadImagesRealtime() {
-  db.collection("products")
-    .where("status", "==", "pending")
-    .onSnapshot(snapshot => {
-      const queue = document.getElementById("image-queue");
-      queue.innerHTML = ""; // clear old list
-
-      snapshot.forEach(doc => {
-        const product = doc.data();
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <img src="${product.imageUrl}" class="w-full rounded-xl mb-3">
-          <h3 class="font-bold">${product.title}</h3>
-          <p>${product.description}</p>
-          <p class="text-red-500 font-black">${product.price}</p>
-          <button onclick="approveProduct('${doc.id}')">Approve</button>
-          <button onclick="rejectProduct('${doc.id}')">Reject</button>
-        `;
-        queue.appendChild(card);
-      });
-
-      // Update overview counter
-      document.getElementById("counter-pending-images").innerText = snapshot.size;
-    });
-}
