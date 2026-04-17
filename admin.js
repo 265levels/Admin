@@ -156,7 +156,7 @@ function loadImagesRealtime() {
     // Listen for items with status 'pending'
     db.collection("products")
         .where("status", "==", "pending")
-        .orderBy("postedAt", "desc")
+        // .orderBy("postedAt", "desc")
         .onSnapshot((snapshot) => {
             const queueContainer = document.getElementById('image-queue');
             const counter = document.getElementById('counter-pending-images');
