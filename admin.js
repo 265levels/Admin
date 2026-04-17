@@ -77,21 +77,32 @@ auth.onAuthStateChanged(async (user) => {
   const userDisplay = document.getElementById("current-user");
 
   if (user) {
+    // Show UID and Email immediately
+    alert("Signed in UID: " + user.uid + "\nEmail: " + user.email);
+
     const adminDoc = await db.collection("admins").doc(user.uid).get();
+
+    // Show whether the admin doc exists
+    alert("Admin doc exists: " + adminDoc.exists);
 
     if (adminDoc.exists) {
       overlay.classList.add("hidden");
       userDisplay.textContent = user.displayName || user.email;
-      
+
+      alert("Authorized! Dashboard starting with role: " + adminDoc.data().role);
+
       logActivity("Admin Login", user.email);
       startDashboard(adminDoc.data().role);
     } else {
       await auth.signOut();
       errorMsg.classList.remove("hidden");
       errorMsg.textContent = `Access Denied: ${user.email} is not authorized.`;
+
+      alert("Access denied for: " + user.email);
     }
   } else {
     overlay.classList.remove("hidden");
+    alert("No user signed in.");
   }
 });
 
