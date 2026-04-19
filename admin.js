@@ -323,3 +323,136 @@ function closeAdminSlideshow() {
 document.addEventListener('keydown', (e) => {
     if (e.key === "Escape") closeAdminSlideshow();
 });
+
+
+// --- Client Search & Messaging Logic ---
+
+async function searchClients() {
+    const emailInput = document.getElementById('client-search-input');
+    const listContainer = document.getElementById('clients-list');
+    const email = emailInput.value.trim().toLowerCase();
+
+    if (!email) {
+        showToast("Please enter an email to search", "error");
+        return;
+    }
+
+    listContainer.innerHTML = '<div class="text-zinc-500 animate-pulse p-10">Searching database...</div>';
+
+    try {
+        // Search Firestore for the user by email
+        const snapshot = await db.collection("users")
+            .where("email", "==", email)
+            .get();
+
+        if (snapshot.empty) {
+            listContainer.innerHTML = `
+                <div class="bg-red-900/20 border border-red-900/50 p-6 rounded-3xl text-red-400">
+                    No seller found with the email: <strong>${email}</strong>
+                </div>`;
+            return;
+        }
+
+        listContainer.innerHTML = ""; // Clear loader
+
+        snapshot.forEach(doc => {
+            const user = doc.data();
+            const userId = doc.id;
+
+            const clientCard = `
+                <div class="bg-zinc-900 p-6 rounded-3xl border border-zinc-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 animate-fadeIn hover:border-zinc-700 transition-colors">
+                    <div>
+                        <h3 class="text-white font-bold text-xl">${user.displayName || 'Anonymous Seller'}</h3>
+                        <p class="text-zinc-400 text-sm">${user.email}</p>
+                        <div class="flex gap-2 mt-3">
+                            <span class="text-[10px] bg-zinc-800 text-zinc-500 px-2 py-1 rounded uppercase font-bold tracking-tighter">ID: ${userId}</span>
+                        </div>
+                    </div>
+                    
+                    <button onclick="prepareAdminMessage('${userId}', '${user.email}')" 
+                            class="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 transition-all active:scale-95">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        Message Seller
+                    </button>
+                </div>
+            `;
+            listContainer.innerHTML += clientCard;
+        });
+
+    } catch (error) {
+        console.error("Search Error:", error);
+        showToast("Error searching clients", "error");
+    }
+}
+
+// --- Messaging System Functions ---
+
+function prepareAdminMessage(userId, userEmail) {
+    // 1. Switch the admin tab to the 'messages' section
+    switchTab('messages'); 
+
+    // 2. Clear the messages area and show the custom compose form
+    const messageArea = document.getElementById('messages');
+    messageArea.innerHTML = `
+        <div class="max-w-3xl animate-fadeIn">
+            <h2 class="text-4xl font-bold mb-2">Compose Message</h2>
+            <p class="text-zinc-500 mb-10">Contacting Seller: <span class="text-white font-mono bg-zinc-800 px-3 py-1 rounded-lg ml-2">${userEmail}</span></p>
+
+            <div class="bg-zinc-900 p-8 rounded-[40px] border border-zinc-800 shadow-2xl">
+                <label class="block text-zinc-500 text-xs font-bold uppercase tracking-widest mb-4">Message Content</label>
+                <textarea id="admin-text-content" 
+                          class="w-full bg-zinc-800 border-none rounded-3xl p-6 text-white placeholder-zinc-600 focus:ring-2 focus:ring-red-600 min-h-[250px] outline-none transition-all"
+                          placeholder="Type your message to the seller here..."></textarea>
+                
+                <div class="flex gap-4 mt-8">
+                    <button onclick="sendFinalMessage('${userId}')" 
+                            class="flex-[2] bg-white text-black font-black py-5 rounded-2xl hover:bg-red-600 hover:text-white transition-all flex justify-center items-center gap-3 active:scale-95">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        SEND MESSAGE
+                    </button>
+                    <button onclick="switchTab('clients')" 
+                            class="flex-1 bg-zinc-800 text-zinc-400 font-bold py-5 rounded-2xl hover:bg-zinc-700 transition-all">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+async function sendFinalMessage(recipientId) {
+    const content = document.getElementById('admin-text-content').value.trim();
+    
+    if (!content) {
+        showToast("Message cannot be empty", "error");
+        return;
+    }
+
+    try {
+        // Log the attempt
+        logActivity("Admin Message Sent", `To: ${recipientId}`);
+
+        // Save the message to Firestore
+        await db.collection("messages").add({
+            senderId: "admin",
+            recipientId: recipientId,
+            message: content,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            status: "unread",
+            type: "admin_notification"
+        });
+
+        showToast("Message successfully sent to seller", "success");
+        
+        // Reset the messages tab to a clean state
+        document.getElementById('messages').innerHTML = `
+            <h2 class="text-3xl font-bold mb-6">Messages</h2>
+            <div class="bg-green-500/10 border border-green-500/20 p-6 rounded-3xl text-green-500">
+                Message sent successfully. Use the Clients tab to contact another seller.
+            </div>
+        `;
+    } catch (error) {
+        console.error("Messaging Error:", error);
+        showToast("Failed to send message: " + error.message, "error");
+    }
+}
