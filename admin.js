@@ -326,7 +326,6 @@ document.addEventListener('keydown', (e) => {
 
 
 // --- Client Search & Messaging Logic ---
-
 async function searchClients() {
     const searchInput = document.getElementById('client-search-input').value.trim();
     const listContainer = document.getElementById('clients-list');
@@ -336,52 +335,77 @@ async function searchClients() {
         return;
     }
 
-    listContainer.innerHTML = '<div class="text-zinc-500 animate-pulse p-10">Searching sellers...</div>';
+    // Loading state
+    listContainer.innerHTML = `
+        <div class="flex flex-col items-center justify-center p-12 space-y-4">
+            <div class="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-zinc-500 animate-pulse font-medium">Searching sellers...</p>
+        </div>`;
 
     try {
-        // Querying the 'products' collection based on your current data structure
+        // Search the 'products' collection for the seller's email
         const snapshot = await db.collection("products")
             .where("sellerEmail", "==", searchInput.toLowerCase())
             .get();
 
         if (snapshot.empty) {
             listContainer.innerHTML = `
-                <div class="p-6 bg-zinc-900/50 border border-zinc-800 rounded-3xl text-zinc-500 italic">
-                    No seller found with email: ${searchInput}
+                <div class="p-10 bg-zinc-900/30 border border-dashed border-zinc-800 rounded-3xl text-center">
+                    <p class="text-zinc-500 italic text-lg">No seller found with email: ${searchInput}</p>
+                    <p class="text-zinc-600 text-xs mt-2 uppercase tracking-widest">Verify the email and try again</p>
                 </div>`;
             return;
         }
 
         listContainer.innerHTML = "";
         
-        // Use a Set to avoid showing the same seller multiple times if they have many products
+        // Use a Set to avoid listing the same seller multiple times if they have many products
         const seenSellers = new Set();
 
         snapshot.forEach(doc => {
             const data = doc.data();
-            const sellerId = data.sellerId;
+            const sellerId = data.sellerId; // This is the crucial UID
             const sellerEmail = data.sellerEmail;
+            const sellerName = data.sellerName || 'Unknown Seller';
 
             if (!seenSellers.has(sellerId)) {
                 seenSellers.add(sellerId);
                 
                 listContainer.innerHTML += `
-                    <div class="bg-zinc-900 p-6 rounded-3xl border border-zinc-800 flex justify-between items-center animate-fadeIn">
-                        <div>
-                            <h3 class="text-white font-bold text-xl">${data.sellerName || 'Seller'}</h3>
-                            <p class="text-zinc-400 text-sm">${sellerEmail}</p>
-                            <p class="text-zinc-600 text-[10px] mt-1 uppercase tracking-widest">Location: ${data.sellerLocation || 'N/A'}</p>
+                    <div class="bg-zinc-900 p-8 rounded-[2rem] border border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-6 animate-fadeIn transition-all hover:border-zinc-700">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 bg-red-600/10 rounded-2xl flex items-center justify-center text-red-600 text-2xl font-black">
+                                ${sellerName.charAt(0)}
+                            </div>
+                            <div>
+                                <h3 class="text-white font-bold text-xl">${sellerName}</h3>
+                                <p class="text-zinc-400 text-sm">${sellerEmail}</p>
+                                <div class="flex gap-2 mt-1">
+                                    <span class="text-[9px] bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded-full uppercase font-bold tracking-tighter">
+                                        UID: ${sellerId.substring(0, 8)}...
+                                    </span>
+                                </div>
+                            </div>
                         </div>
+                        
                         <button onclick="prepareAdminMessage('${sellerId}', '${sellerEmail}')" 
-                                class="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-xl font-bold transition-all active:scale-95">
-                            Message Seller
+                                class="w-full md:w-auto bg-red-600 hover:bg-red-700 text-white px-10 py-4 rounded-2xl font-black transition-all active:scale-95 shadow-lg shadow-red-900/20">
+                            MESSAGE SELLER
                         </button>
                     </div>`;
             }
         });
+
+        logActivity("Search", `Searched for client: ${searchInput}`);
+
     } catch (error) {
-        console.error("Search failed:", error);
+        console.error("Search Error:", error);
         showToast("Permission denied or search failed", "error");
+        
+        listContainer.innerHTML = `
+            <div class="p-6 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-sm">
+                <strong>Error:</strong> ${error.message}
+            </div>`;
     }
 }
 
