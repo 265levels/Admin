@@ -153,17 +153,13 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 // --- Image Approval Logic ---
 
 function loadImagesRealtime() {
-    // Listen for items with status 'pending'
     db.collection("products")
         .where("status", "==", "pending")
-        // .orderBy("postedAt", "desc")
         .onSnapshot((snapshot) => {
             const queueContainer = document.getElementById('image-queue');
             const counter = document.getElementById('counter-pending-images');
             
-            // Update the Overview Counter instantly
             if (counter) counter.innerText = snapshot.size;
-
             if (!queueContainer) return;
             queueContainer.innerHTML = "";
 
@@ -178,11 +174,19 @@ function loadImagesRealtime() {
             snapshot.forEach((doc) => {
                 const product = doc.data();
                 const productId = doc.id;
+                const images = product.images || [];
+                // This prepares the image array to be passed safely into the HTML
+                const imagesJson = JSON.stringify(images).replace(/"/g, '&quot;');
 
                 const card = `
-                    <div class="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden flex flex-col md:flex-row gap-6 p-6">
-                        <div class="w-full md:w-64 h-48 flex-shrink-0">
-                            <img src="${product.images[0]}" class="w-full h-full object-cover rounded-2xl" alt="Product">
+                    <div class="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden flex flex-col md:flex-row gap-6 p-6 hover:border-zinc-700 transition-colors group">
+                        <div class="w-full md:w-64 h-64 flex-shrink-0 relative cursor-zoom-in overflow-hidden rounded-2xl" 
+                             onclick="openAdminSlideshow(${imagesJson})">
+                            <img src="${images[0] || 'placeholder.jpg'}" 
+                                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="Product">
+                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span class="bg-white/10 backdrop-blur-md px-4 py-2 rounded-full text-xs font-bold border border-white/20">VIEW ${images.length} PHOTOS</span>
+                            </div>
                         </div>
 
                         <div class="flex-1 flex flex-col justify-between">
@@ -194,20 +198,20 @@ function loadImagesRealtime() {
                                 <p class="text-zinc-400 text-sm line-clamp-2 mb-4">${product.description}</p>
                                 
                                 <div class="grid grid-cols-2 gap-4 text-xs">
-                                    <div>
-                                        <p class="text-zinc-500">Price</p>
-                                        <p class="text-white font-mono">MWK ${product.price.toLocaleString()}</p>
+                                    <div class="bg-zinc-950/50 p-3 rounded-xl border border-zinc-800">
+                                        <p class="text-zinc-500 uppercase font-bold text-[9px]">Price</p>
+                                        <p class="text-white font-mono text-sm">MWK ${Number(product.price).toLocaleString()}</p>
                                     </div>
-                                    <div>
-                                        <p class="text-zinc-500">Seller</p>
-                                        <p class="text-white">${product.sellerName}</p>
+                                    <div class="bg-zinc-950/50 p-3 rounded-xl border border-zinc-800">
+                                        <p class="text-zinc-500 uppercase font-bold text-[9px]">Seller</p>
+                                        <p class="text-white text-sm">${product.sellerName || 'Anonymous'}</p>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="flex gap-3 mt-6">
                                 <button onclick="processApproval('${productId}', 'approved')" 
-                                        class="flex-1 bg-white text-black font-bold py-3 rounded-xl hover:bg-zinc-200 transition-all active:scale-95">
+                                        class="flex-1 bg-white text-black font-bold py-3 rounded-xl hover:bg-green-500 hover:text-white transition-all active:scale-95">
                                     Approve
                                 </button>
                                 <button onclick="processApproval('${productId}', 'rejected')" 
@@ -253,4 +257,55 @@ function updateOverviewStats() {
     console.log("Overview Stats: Ready and waiting for code.");
 }
 
+// The Slideshow Logic
+
+let adminCurrentSlide = 0;
+let adminSlides = [];
+
+function openAdminSlideshow(images) {
+    if (!images || images.length === 0) return;
+    adminSlides = images;
+    adminCurrentSlide = 0;
+    
+    let modal = document.getElementById('admin-slideshow-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'admin-slideshow-modal';
+        modal.className = 'fixed inset-0 bg-black/95 z-[999] hidden flex items-center justify-center p-4 backdrop-blur-sm';
+        document.body.appendChild(modal);
+    }
+
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // Prevents background scrolling
+    renderAdminSlide();
+}
+
+function renderAdminSlide() {
+    const modal = document.getElementById('admin-slideshow-modal');
+    modal.innerHTML = `
+        <button onclick="closeAdminSlideshow()" class="absolute top-6 right-6 text-zinc-400 hover:text-white text-4xl">&times;</button>
+        
+        <div class="relative w-full max-w-4xl h-full flex items-center justify-center">
+            <img src="${adminSlides[adminCurrentSlide]}" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl">
+            
+            ${adminSlides.length > 1 ? `
+                <button onclick="changeAdminSlide(-1)" class="absolute left-0 bg-white/5 hover:bg-white/10 w-12 h-12 rounded-full flex items-center justify-center text-white">❮</button>
+                <button onclick="changeAdminSlide(1)" class="absolute right-0 bg-white/5 hover:bg-white/10 w-12 h-12 rounded-full flex items-center justify-center text-white">❯</button>
+                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 text-zinc-500 font-mono text-xs">
+                    ${adminCurrentSlide + 1} / ${adminSlides.length}
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+function changeAdminSlide(dir) {
+    adminCurrentSlide = (adminCurrentSlide + dir + adminSlides.length) % adminSlides.length;
+    renderAdminSlide();
+}
+
+function closeAdminSlideshow() {
+    document.getElementById('admin-slideshow-modal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
 
