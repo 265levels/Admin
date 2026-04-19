@@ -328,56 +328,52 @@ document.addEventListener('keydown', (e) => {
 // --- Client Search & Messaging Logic ---
 
 async function searchClients() {
-    const searchType = document.getElementById('search-type').value; // 'email' or 'phone'
     const searchInput = document.getElementById('client-search-input').value.trim();
     const listContainer = document.getElementById('clients-list');
     
-    if (!searchInput) {
-        showToast("Please enter a search value", "error");
-        return;
-    }
+    if (!searchInput) return showToast("Please enter an email", "error");
 
-    listContainer.innerHTML = '<div class="text-zinc-500 animate-pulse p-4">Searching database...</div>';
+    listContainer.innerHTML = '<div class="text-zinc-500 animate-pulse p-10">Searching sellers...</div>';
 
     try {
-        // This query dynamically checks the field based on the dropdown selection
-        const snapshot = await db.collection("users")
-            .where(searchType, "==", searchType === 'email' ? searchInput.toLowerCase() : searchInput)
+        // We search the 'products' collection instead of 'users'
+        const snapshot = await db.collection("products")
+            .where("sellerEmail", "==", searchInput.toLowerCase())
             .get();
 
         if (snapshot.empty) {
-            listContainer.innerHTML = `
-                <div class="bg-zinc-900/50 border border-zinc-800 p-6 rounded-2xl text-zinc-500 italic">
-                    No user found with ${searchType}: ${searchInput}
-                </div>`;
+            listContainer.innerHTML = `<div class="p-6 text-red-400">No seller found with email: ${searchInput}</div>`;
             return;
         }
 
-        listContainer.innerHTML = ""; // Clear loader
+        listContainer.innerHTML = "";
         
+        // Since one seller might have multiple products, we use a Set to only show the seller once
+        const displayedSellers = new Set();
+
         snapshot.forEach(doc => {
-            const user = doc.data();
-            const userId = doc.id;
+            const data = doc.data();
+            const sellerId = data.sellerId;
+            const sellerEmail = data.sellerEmail;
 
-            listContainer.innerHTML += `
-                <div class="bg-zinc-900 p-6 rounded-3xl border border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-4 animate-fadeIn">
-                    <div>
-                        <h3 class="text-white font-bold text-lg">${user.displayName || 'Unnamed User'}</h3>
-                        <p class="text-zinc-400 text-sm">${user.email}</p>
-                        ${user.phone ? `<p class="text-zinc-500 text-xs mt-1">📞 ${user.phone}</p>` : ''}
-                    </div>
-                    
-                    <button onclick="prepareAdminMessage('${userId}', '${user.email}')" 
-                            class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold transition-all active:scale-95 flex items-center gap-2">
-                        <i class="fa-solid fa-envelope"></i>
-                        Message Seller
-                    </button>
-                </div>
-            `;
+            if (!displayedSellers.has(sellerId)) {
+                displayedSellers.add(sellerId);
+                
+                listContainer.innerHTML += `
+                    <div class="bg-zinc-900 p-6 rounded-3xl border border-zinc-800 flex justify-between items-center animate-fadeIn">
+                        <div>
+                            <h3 class="text-white font-bold text-xl">${data.sellerName || 'Seller'}</h3>
+                            <p class="text-zinc-400 text-sm">${sellerEmail}</p>
+                            <p class="text-zinc-600 text-[10px] mt-1 uppercase tracking-widest">Location: ${data.sellerLocation || 'N/A'}</p>
+                        </div>
+                        <button onclick="prepareAdminMessage('${sellerId}', '${sellerEmail}')" 
+                                class="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-xl font-bold transition-all active:scale-95">
+                            Message Seller
+                        </button>
+                    </div>`;
+            }
         });
-
     } catch (error) {
-        console.error("Search Error:", error);
         showToast("Search failed: " + error.message, "error");
     }
 }
