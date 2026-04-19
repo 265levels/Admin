@@ -328,22 +328,57 @@ document.addEventListener('keydown', (e) => {
 // --- Client Search & Messaging Logic ---
 
 async function searchClients() {
-    const type = document.getElementById('search-type').value; // 'email', 'phone', etc.
-    const input = document.getElementById('client-search-input').value.trim();
+    const searchType = document.getElementById('search-type').value; // 'email' or 'phone'
+    const searchInput = document.getElementById('client-search-input').value.trim();
     const listContainer = document.getElementById('clients-list');
     
-    if (!input) return showToast("Please enter search terms", "error");
+    if (!searchInput) {
+        showToast("Please enter a search value", "error");
+        return;
+    }
 
-    listContainer.innerHTML = '<p class="text-zinc-500 animate-pulse">Searching...</p>';
+    listContainer.innerHTML = '<div class="text-zinc-500 animate-pulse p-4">Searching database...</div>';
 
     try {
+        // This query dynamically checks the field based on the dropdown selection
         const snapshot = await db.collection("users")
-            .where(type, "==", input) // Uses the selected type (email or phone)
+            .where(searchType, "==", searchType === 'email' ? searchInput.toLowerCase() : searchInput)
             .get();
+
+        if (snapshot.empty) {
+            listContainer.innerHTML = `
+                <div class="bg-zinc-900/50 border border-zinc-800 p-6 rounded-2xl text-zinc-500 italic">
+                    No user found with ${searchType}: ${searchInput}
+                </div>`;
+            return;
+        }
+
+        listContainer.innerHTML = ""; // Clear loader
         
-        // ... rest of your search logic
-    } catch (e) {
-        showToast("Search failed", "error");
+        snapshot.forEach(doc => {
+            const user = doc.data();
+            const userId = doc.id;
+
+            listContainer.innerHTML += `
+                <div class="bg-zinc-900 p-6 rounded-3xl border border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-4 animate-fadeIn">
+                    <div>
+                        <h3 class="text-white font-bold text-lg">${user.displayName || 'Unnamed User'}</h3>
+                        <p class="text-zinc-400 text-sm">${user.email}</p>
+                        ${user.phone ? `<p class="text-zinc-500 text-xs mt-1">📞 ${user.phone}</p>` : ''}
+                    </div>
+                    
+                    <button onclick="prepareAdminMessage('${userId}', '${user.email}')" 
+                            class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold transition-all active:scale-95 flex items-center gap-2">
+                        <i class="fa-solid fa-envelope"></i>
+                        Message Seller
+                    </button>
+                </div>
+            `;
+        });
+
+    } catch (error) {
+        console.error("Search Error:", error);
+        showToast("Search failed: " + error.message, "error");
     }
 }
 
@@ -416,5 +451,66 @@ async function sendFinalMessage(recipientId) {
     } catch (error) {
         console.error("Messaging Error:", error);
         showToast("Failed to send message: " + error.message, "error");
+    }
+}
+
+function prepareAdminMessage(userId, userEmail) {
+    // 1. Move the UI to the Messages tab
+    switchTab('messages'); 
+
+    // 2. Build the message interface inside the messages container
+    const container = document.getElementById('messages');
+    container.innerHTML = `
+        <div class="max-w-2xl animate-fadeIn">
+            <div class="flex items-center gap-4 mb-8">
+                <button onclick="switchTab('clients')" class="text-zinc-500 hover:text-white transition-colors">← Back</button>
+                <h2 class="text-3xl font-bold">Message Seller</h2>
+            </div>
+
+            <div class="bg-zinc-900 p-8 rounded-[32px] border border-zinc-800 shadow-2xl">
+                <p class="text-zinc-500 text-xs font-bold uppercase tracking-widest mb-2">Recipient</p>
+                <p class="text-white font-mono mb-6">${userEmail}</p>
+
+                <label class="block text-zinc-500 text-xs font-bold uppercase tracking-widest mb-2">Message Body</label>
+                <textarea id="admin-msg-content" 
+                          class="w-full bg-zinc-800 border-none rounded-2xl p-4 text-white placeholder-zinc-600 focus:ring-2 focus:ring-red-600 min-h-[200px] outline-none transition-all"
+                          placeholder="Type instructions or feedback for the seller..."></textarea>
+                
+                <button onclick="sendAdminMessageToUser('${userId}')" 
+                        class="w-full mt-6 bg-white text-black font-black py-4 rounded-xl hover:bg-red-600 hover:text-white transition-all">
+                    SEND NOTIFICATION
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+async function sendAdminMessageToUser(recipientId) {
+    const text = document.getElementById('admin-msg-content').value.trim();
+    
+    if (!text) return showToast("Please type a message", "error");
+
+    try {
+        await db.collection("messages").add({
+            senderId: "admin",
+            recipientId: recipientId,
+            content: text,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            status: "unread",
+            type: "admin_alert"
+        });
+
+        showToast("Message sent to seller!", "success");
+        logActivity("Sent Message", `To User: ${recipientId}`);
+
+        // Reset the message tab view
+        document.getElementById('messages').innerHTML = `
+            <h2 class="text-3xl font-bold mb-6">Messages</h2>
+            <div class="p-10 bg-zinc-900/50 border border-dashed border-zinc-800 rounded-3xl text-center">
+                <p class="text-zinc-500">Your message has been delivered successfully.</p>
+            </div>`;
+            
+    } catch (e) {
+        showToast("Failed to send", "error");
     }
 }
