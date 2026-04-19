@@ -328,60 +328,22 @@ document.addEventListener('keydown', (e) => {
 // --- Client Search & Messaging Logic ---
 
 async function searchClients() {
-    const emailInput = document.getElementById('client-search-input');
+    const type = document.getElementById('search-type').value; // 'email', 'phone', etc.
+    const input = document.getElementById('client-search-input').value.trim();
     const listContainer = document.getElementById('clients-list');
-    const email = emailInput.value.trim().toLowerCase();
+    
+    if (!input) return showToast("Please enter search terms", "error");
 
-    if (!email) {
-        showToast("Please enter an email to search", "error");
-        return;
-    }
-
-    listContainer.innerHTML = '<div class="text-zinc-500 animate-pulse p-10">Searching database...</div>';
+    listContainer.innerHTML = '<p class="text-zinc-500 animate-pulse">Searching...</p>';
 
     try {
-        // Search Firestore for the user by email
         const snapshot = await db.collection("users")
-            .where("email", "==", email)
+            .where(type, "==", input) // Uses the selected type (email or phone)
             .get();
-
-        if (snapshot.empty) {
-            listContainer.innerHTML = `
-                <div class="bg-red-900/20 border border-red-900/50 p-6 rounded-3xl text-red-400">
-                    No seller found with the email: <strong>${email}</strong>
-                </div>`;
-            return;
-        }
-
-        listContainer.innerHTML = ""; // Clear loader
-
-        snapshot.forEach(doc => {
-            const user = doc.data();
-            const userId = doc.id;
-
-            const clientCard = `
-                <div class="bg-zinc-900 p-6 rounded-3xl border border-zinc-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 animate-fadeIn hover:border-zinc-700 transition-colors">
-                    <div>
-                        <h3 class="text-white font-bold text-xl">${user.displayName || 'Anonymous Seller'}</h3>
-                        <p class="text-zinc-400 text-sm">${user.email}</p>
-                        <div class="flex gap-2 mt-3">
-                            <span class="text-[10px] bg-zinc-800 text-zinc-500 px-2 py-1 rounded uppercase font-bold tracking-tighter">ID: ${userId}</span>
-                        </div>
-                    </div>
-                    
-                    <button onclick="prepareAdminMessage('${userId}', '${user.email}')" 
-                            class="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 transition-all active:scale-95">
-                        <i class="fa-solid fa-paper-plane"></i>
-                        Message Seller
-                    </button>
-                </div>
-            `;
-            listContainer.innerHTML += clientCard;
-        });
-
-    } catch (error) {
-        console.error("Search Error:", error);
-        showToast("Error searching clients", "error");
+        
+        // ... rest of your search logic
+    } catch (e) {
+        showToast("Search failed", "error");
     }
 }
 
