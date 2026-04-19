@@ -271,27 +271,32 @@ function openAdminSlideshow(images) {
     if (!modal) {
         modal = document.createElement('div');
         modal.id = 'admin-slideshow-modal';
-        modal.className = 'fixed inset-0 bg-black/95 z-[999] hidden flex items-center justify-center p-4 backdrop-blur-sm';
+        // z-[999] ensures it stays above the sidebar and header
+        modal.className = 'fixed inset-0 bg-black/98 z-[999] hidden flex items-center justify-center p-4 backdrop-blur-xl';
         document.body.appendChild(modal);
     }
 
     modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden'; // Prevents background scrolling
+    modal.style.display = 'flex'; // Ensure flex display is active
+    document.body.style.overflow = 'hidden'; // Stop background from scrolling
     renderAdminSlide();
 }
 
 function renderAdminSlide() {
     const modal = document.getElementById('admin-slideshow-modal');
     modal.innerHTML = `
-        <button onclick="closeAdminSlideshow()" class="absolute top-6 right-6 text-zinc-400 hover:text-white text-4xl">&times;</button>
+        <button onclick="closeAdminSlideshow()" class="absolute top-6 right-6 text-zinc-500 hover:text-white text-5xl z-[1000] transition-colors cursor-pointer p-4">
+            &times;
+        </button>
         
-        <div class="relative w-full max-w-4xl h-full flex items-center justify-center">
-            <img src="${adminSlides[adminCurrentSlide]}" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl">
+        <div class="relative w-full max-w-5xl h-[85vh] flex items-center justify-center">
+            <img src="${adminSlides[adminCurrentSlide]}" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl border border-zinc-800">
             
             ${adminSlides.length > 1 ? `
-                <button onclick="changeAdminSlide(-1)" class="absolute left-0 bg-white/5 hover:bg-white/10 w-12 h-12 rounded-full flex items-center justify-center text-white">❮</button>
-                <button onclick="changeAdminSlide(1)" class="absolute right-0 bg-white/5 hover:bg-white/10 w-12 h-12 rounded-full flex items-center justify-center text-white">❯</button>
-                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 text-zinc-500 font-mono text-xs">
+                <button onclick="changeAdminSlide(-1)" class="absolute left-4 bg-white/5 hover:bg-white/10 w-14 h-14 rounded-full flex items-center justify-center text-white transition-all cursor-pointer">❮</button>
+                <button onclick="changeAdminSlide(1)" class="absolute right-4 bg-white/5 hover:bg-white/10 w-14 h-14 rounded-full flex items-center justify-center text-white transition-all cursor-pointer">❯</button>
+                
+                <div class="absolute -bottom-10 left-1/2 -translate-x-1/2 text-zinc-500 font-mono text-sm">
                     ${adminCurrentSlide + 1} / ${adminSlides.length}
                 </div>
             ` : ''}
@@ -304,8 +309,17 @@ function changeAdminSlide(dir) {
     renderAdminSlide();
 }
 
+// THE FIX: Explicitly hide and reset display
 function closeAdminSlideshow() {
-    document.getElementById('admin-slideshow-modal').classList.add('hidden');
-    document.body.style.overflow = 'auto';
+    const modal = document.getElementById('admin-slideshow-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto'; // Re-enable scrolling
+    }
 }
 
+// Optional: Exit on Escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === "Escape") closeAdminSlideshow();
+});
