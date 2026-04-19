@@ -331,33 +331,39 @@ async function searchClients() {
     const searchInput = document.getElementById('client-search-input').value.trim();
     const listContainer = document.getElementById('clients-list');
     
-    if (!searchInput) return showToast("Please enter an email", "error");
+    if (!searchInput) {
+        showToast("Please enter an email", "error");
+        return;
+    }
 
     listContainer.innerHTML = '<div class="text-zinc-500 animate-pulse p-10">Searching sellers...</div>';
 
     try {
-        // We search the 'products' collection instead of 'users'
+        // Querying the 'products' collection based on your current data structure
         const snapshot = await db.collection("products")
             .where("sellerEmail", "==", searchInput.toLowerCase())
             .get();
 
         if (snapshot.empty) {
-            listContainer.innerHTML = `<div class="p-6 text-red-400">No seller found with email: ${searchInput}</div>`;
+            listContainer.innerHTML = `
+                <div class="p-6 bg-zinc-900/50 border border-zinc-800 rounded-3xl text-zinc-500 italic">
+                    No seller found with email: ${searchInput}
+                </div>`;
             return;
         }
 
         listContainer.innerHTML = "";
         
-        // Since one seller might have multiple products, we use a Set to only show the seller once
-        const displayedSellers = new Set();
+        // Use a Set to avoid showing the same seller multiple times if they have many products
+        const seenSellers = new Set();
 
         snapshot.forEach(doc => {
             const data = doc.data();
             const sellerId = data.sellerId;
             const sellerEmail = data.sellerEmail;
 
-            if (!displayedSellers.has(sellerId)) {
-                displayedSellers.add(sellerId);
+            if (!seenSellers.has(sellerId)) {
+                seenSellers.add(sellerId);
                 
                 listContainer.innerHTML += `
                     <div class="bg-zinc-900 p-6 rounded-3xl border border-zinc-800 flex justify-between items-center animate-fadeIn">
@@ -374,7 +380,8 @@ async function searchClients() {
             }
         });
     } catch (error) {
-        showToast("Search failed: " + error.message, "error");
+        console.error("Search failed:", error);
+        showToast("Permission denied or search failed", "error");
     }
 }
 
