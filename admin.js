@@ -2,6 +2,17 @@
 // LEVELS ADMIN - admin.js
 // ======================
 
+// --- Helper Function: Generate Unique Transit Code ---
+function generateTransitCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; 
+    let result = 'LVL-';
+    for (let i = 0; i < 6; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
+
+
 // --- Firebase Configuration ---
 const firebaseConfig = {
   apiKey: "AIzaSyCPUBkJzJhLUVD0qXMg2_tyvsZ9ZxtfWuc",
@@ -229,12 +240,24 @@ function loadImagesRealtime() {
 
 async function processApproval(id, decision) {
     try {
-        await db.collection("products").doc(id).update({
+        let updateData = {
             status: decision,
             approvedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        };
+
+        // If approving, generate and attach the Transit Code
+        if (decision === 'approved') {
+            const tCode = generateTransitCode();
+            updateData.transitCode = tCode;
+            
+            // Show the code in the toast so you can see it immediately
+            showToast(`Item is now live! Code: ${tCode}`, "success");
+        } else {
+            showToast(`Item rejected`, "success");
+        }
+
+        await db.collection("products").doc(id).update(updateData);
         
-        showToast(`Item ${decision === 'approved' ? 'is now live' : 'rejected'}`, "success");
         logActivity("Product Approval", `Status: ${decision} | ID: ${id}`);
         
     } catch (error) {
